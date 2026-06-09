@@ -1,0 +1,154 @@
+<?php
+
+namespace App\Livewire\CRUD;
+
+use App\Models\Area;
+use App\Models\Ciclo;
+use App\Models\Horario;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+class Horarios extends Component
+{
+    use WithFileUploads, AuthorizesRequests;
+
+    public $nombre, $area_id, $ciclo_id, $imagen, $horario_id;
+    public $filtro_area, $filtro_ciclo;
+    
+    public $areas = [];
+    public $ciclos = []; 
+    public $ciclos_filtro = [];
+
+    public $isModalOpen = false;
+
+    public function mount()
+    {
+        $this->areas = Area::all();
+        $user = Auth::user();
+
+        // Si es alumno, obtenemos el área a través de su carrera
+        if (!$user->hasRole('admin')) {
+            $perfil = $user->alumno; // Relación HasOne
+            if ($perfil && $perfil->carrera) {
+                // El área no está en el alumno, está en la carrera del alumno
+                $this->filtro_area = $perfil->carrera->area_id; 
+                $this->filtro_ciclo = $perfil->ciclo_id;
+            }
+        }
+    }
+
+    public function updatedAreaId($value)
+    {
+        $this->ciclos = Ciclo::where('area_id', $value)->get();
+        $this->ciclo_id = null;
+    }
+
+    public function updatedFiltroArea($value)
+    {
+        $this->ciclos_filtro = Ciclo::where('area_id', $value)->get();
+        $this->filtro_ciclo = null;
+    }
+
+    public function render()
+    {
+        $user = Auth::user();
+        $query = Horario::query()->with(['area', 'ciclo']);
+
+        if ($user->hasRole('admin')) {
+            if ($this->filtro_area) $query->where('area_id', $this->filtro_area);
+            if ($this->filtro_ciclo) $query->where('ciclo_id', $this->filtro_ciclo);
+        } else {
+            // Lógica para Alumno
+            $perfil = $user->alumno;
+
+            // Para filtrar el horario necesitamos el area_id (vía carrera) y el ciclo_id (directo)
+            if ($perfil && $perfil->carrera && $perfil->ciclo_id) {
+                $query->where('area_id', $perfil->carrera->area_id)
+                      ->where('ciclo_id', $perfil->ciclo_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        return view('livewire.c-r-u-d.horarios', [
+            'horarios' => $query->latest()->get(),
+            'breadcrumbs' => [
+                ['name' => 'Inicio', 'url' => route('dashboard')],
+                ['name' => 'Horarios', 'url' => null],
+            ]
+        ]);
+    }
+
+    // --- Métodos del Administrador ---
+
+    public function create()
+    {
+        if (!Auth::user()->hasRole('admin')) return;
+        $this->resetFields();
+        $this->openModal();
+    }
+
+    public function save()
+    {
+        if (!Auth::user()->hasRole('admin')) abort(403);
+
+        $this->validate([
+            'nombre' => 'required|string|max:255',
+            'area_id' => 'required|exists:areas,id',
+            'ciclo_id' => 'required|exists:ciclos,id',
+            'imagen' => $this->horario_id ? 'nullable|image|max:2048' : 'required|image|max:2048',
+        ]);
+
+        $data = [
+            'nombre' => $this->nombre,
+            'area_id' => $this->area_id,
+            'ciclo_id' => $this->ciclo_id,
+        ];
+
+        if ($this->imagen) {
+            if ($this->horario_id) {
+                $old = Horario::find($this->horario_id);
+                if($old && $old->imagen) Storage::disk('public')->delete($old->imagen);
+            }
+            $data['imagen'] = $this->imagen->store('horarios', 'public');
+        }
+
+        Horario::updateOrCreate(['id' => $this->horario_id], $data);
+
+        session()->flash('message', 'Operación exitosa.');
+        $this->closeModal();
+    }
+
+    public function edit($id)
+    {
+        if (!Auth::user()->hasRole('admin')) return;
+        
+        $horario = Horario::findOrFail($id);
+        $this->horario_id = $id;
+        $this->nombre = $horario->nombre;
+        $this->area_id = $horario->area_id;
+        $this->ciclos = Ciclo::where('area_id', $horario->area_id)->get();
+        $this->ciclo_id = $horario->ciclo_id;
+        
+        $this->openModal();
+    }
+
+    public function delete($id)
+    {
+        if (!Auth::user()->hasRole('admin')) return;
+        $horario = Horario::findOrFail($id);
+        if($horario->imagen) Storage::disk('public')->delete($horario->imagen);
+        $horario->delete();
+    }
+
+    public function resetFields() {
+        $this->nombre = ''; $this->area_id = ''; $this->ciclo_id = '';
+        $this->imagen = null; $this->horario_id = null; $this->ciclos = [];
+    }
+
+    public function openModal() { $this->isModalOpen = true; }
+    public function closeModal() { $this->isModalOpen = false; $this->resetFields(); }
+}
