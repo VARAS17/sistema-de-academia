@@ -18,10 +18,19 @@ class Alumno extends Component
     use WithPagination;
 
     public string $view = 'index';
-    public $alumno_id = null; // Guardará el user_id
-    public string $name = '', $email = '', $password = '', $dni = '', $telefono = '';
-    public ?int $area_id = null, $ciclo_id = null, $carrera_id = null;
+    
+    // Propiedades corregidas para aceptar NULL (?string)
+    public $alumno_id = null; 
+    public ?string $name = null;
+    public ?string $email = null;
+    public ?string $password = null;
+    public ?string $dni = null;
+    public ?string $telefono = null;
+    
+    public $area_id = null, $ciclo_id = null, $carrera_id = null;
+    
     public string $search = '';
+    public $selectedAlumno;
 
     protected function rules(): array
     {
@@ -45,13 +54,20 @@ class Alumno extends Component
     {
         return view('livewire.c-r-u-d.alumno', [
             'alumnos'  => AlumnoModel::with(['user', 'ciclo.area', 'carrera'])
-                ->whereHas('user', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
-                ->orWhere('dni', 'like', "%{$this->search}%")
+                ->where(function($query) {
+                    $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+                          ->orWhere('dni', 'like', "%{$this->search}%");
+                })
                 ->orderByDesc('created_at')->paginate(10),
             'areas'    => Area::orderBy('nombre')->get(),
             'ciclos'   => $this->area_id ? Ciclo::where('area_id', $this->area_id)->get() : collect(),
             'carreras' => $this->area_id ? Carrera::where('area_id', $this->area_id)->get() : collect(),
         ]);
+    }
+
+    public function show($id) {
+        $this->selectedAlumno = AlumnoModel::with(['user', 'ciclo.area', 'carrera', 'cursos'])->findOrFail($id);
+        $this->view = 'show';
     }
 
     public function create() {
@@ -61,13 +77,16 @@ class Alumno extends Component
 
     public function store() {
         $this->validate();
+
         DB::transaction(function () {
             $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
                 'password' => Hash::make($this->password),
             ]);
+
             $user->assignRole('alumno');
+
             AlumnoModel::create([
                 'user_id' => $user->id,
                 'dni' => $this->dni,
@@ -76,17 +95,20 @@ class Alumno extends Component
                 'carrera_id' => $this->carrera_id,
             ]);
         });
+
         session()->flash('message', 'Alumno creado.');
         $this->showIndex();
     }
 
     public function edit($id) {
+        $this->resetForm();
         $alumno = AlumnoModel::with('user', 'ciclo')->findOrFail($id);
+        
         $this->alumno_id = $alumno->user_id;
         $this->name = $alumno->user->name;
         $this->email = $alumno->user->email;
         $this->dni = $alumno->dni;
-        $this->telefono = $alumno->telefono;
+        $this->telefono = $alumno->telefono; // Ahora acepta NULL sin error
         $this->area_id = $alumno->ciclo->area_id;
         $this->ciclo_id = $alumno->ciclo_id;
         $this->carrera_id = $alumno->carrera_id;
@@ -116,13 +138,16 @@ class Alumno extends Component
     public function delete($id) {
         DB::transaction(function () use ($id) {
             $alumno = AlumnoModel::findOrFail($id);
-            $userId = $alumno->user_id;
-            $alumno->delete();
-            User::where('id', $userId)->delete();
+            User::where('id', $alumno->user_id)->delete();
         });
         session()->flash('message', 'Eliminado.');
     }
 
     public function showIndex() { $this->resetForm(); $this->view = 'index'; }
-    private function resetForm() { $this->reset(['alumno_id','name','email','password','dni','telefono','area_id','ciclo_id','carrera_id']); }
+    public function cancel() { $this->showIndex(); }
+
+    private function resetForm() { 
+        $this->reset(['alumno_id','name','email','password','dni','telefono','area_id','ciclo_id','carrera_id','selectedAlumno']); 
+        $this->resetValidation();
+    }
 }

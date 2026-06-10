@@ -14,26 +14,18 @@ class Docente extends Component
 {
     use WithPagination;
 
-    // Control de vista: 'index', 'create', 'edit'
     public $view = 'index';
 
-    // Propiedades Identidad
+    // Propiedades Identidad y Perfil
     public $name, $email, $password, $docente_id;
-    
-    // Propiedades Perfil
     public $dni, $telefono, $especialidad, $fecha_contratacion;
-    
-    // Carga Académica
+    public $selectedDocente; 
     public $selectedCursos = []; 
-
     public $search = '';
 
-    // El error "Unable to resolve dependency" se soluciona haciendo el ID opcional en el mount
     public function mount($id = null)
     {
-        if ($id) {
-            $this->edit($id);
-        }
+        if ($id) { $this->edit($id); }
     }
 
     protected function rules()
@@ -68,6 +60,12 @@ class Docente extends Component
         ]);
     }
 
+    public function show($id)
+    {
+        $this->selectedDocente = DocenteModel::with(['user', 'cursos.area', 'cursos.ciclo'])->findOrFail($id);
+        $this->view = 'show';
+    }
+
     public function create()
     {
         $this->resetInputFields();
@@ -77,7 +75,6 @@ class Docente extends Component
     public function edit($id)
     {
         $this->resetValidation();
-        // Buscamos por user_id ya que es la PK en el modelo Docente
         $docente = DocenteModel::with('user', 'cursos')->findOrFail($id);
         
         $this->docente_id = $id;
@@ -97,31 +94,16 @@ class Docente extends Component
         $this->validate();
 
         DB::transaction(function () {
-            // 1. Preparar datos de Usuario
-            $userData = [
-                'name' => $this->name,
-                'email' => $this->email,
-            ];
-
-            // Solo actualizar password si se proporcionó una nueva
+            $userData = ['name' => $this->name, 'email' => $this->email];
             if (!empty($this->password)) {
                 $userData['password'] = Hash::make($this->password);
             } elseif (!$this->docente_id) {
                 $userData['password'] = Hash::make('password123');
             }
 
-            // 2. Identidad (User)
-            $user = User::updateOrCreate(
-                ['id' => $this->docente_id], // docente_id es el user_id
-                $userData
-            );
+            $user = User::updateOrCreate(['id' => $this->docente_id], $userData);
+            if (!$user->hasRole('docente')) { $user->assignRole('docente'); }
 
-            // 3. Rol Spatie
-            if (!$user->hasRole('docente')) {
-                $user->assignRole('docente');
-            }
-
-            // 4. Perfil (Docente)
             $docente = DocenteModel::updateOrCreate(
                 ['user_id' => $user->id], 
                 [
@@ -131,27 +113,21 @@ class Docente extends Component
                     'fecha_contratacion' => $this->fecha_contratacion,
                 ]
             );
-
-            // 5. Pivot Cursos
             $docente->cursos()->sync($this->selectedCursos);
         });
 
-        session()->flash('message', $this->docente_id ? 'Docente actualizado exitosamente.' : 'Docente registrado correctamente.');
+        session()->flash('message', $this->docente_id ? 'Docente actualizado.' : 'Docente registrado.');
         $this->showIndex();
     }
 
     public function delete($id)
     {
-        // Al borrar el User, por la migración onDelete('cascade'), se borra el Docente
         $user = User::findOrFail($id);
         $user->delete();
-        session()->flash('message', 'Docente eliminado correctamente.');
+        session()->flash('message', 'Docente eliminado.');
     }
 
-    public function cancel()
-    {
-        $this->showIndex();
-    }
+    // --- MÉTODOS DE NAVEGACIÓN ---
 
     public function showIndex()
     {
@@ -159,9 +135,21 @@ class Docente extends Component
         $this->view = 'index';
     }
 
+    // Agregamos este para que coincida con el botón del front
+    public function cancel()
+    {
+        $this->showIndex();
+    }
+
+    // Agregamos este por si usas "volver" en algún lado
+    public function volver()
+    {
+        $this->showIndex();
+    }
+
     private function resetInputFields()
     {
-        $this->reset(['name', 'email', 'password', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 'selectedCursos', 'docente_id']);
+        $this->reset(['name', 'email', 'password', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 'selectedCursos', 'docente_id', 'selectedDocente']);
         $this->resetValidation();
     }
 }
