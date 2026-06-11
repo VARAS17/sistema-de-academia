@@ -16,32 +16,35 @@ class Matricula extends Component
 {
     use WithPagination, WithFileUploads;
 
-    // Propiedades del modelo
+    // Propiedades de control y búsqueda
     public $matricula_id; 
     public $search = '';
-    public $selectedAlumno = null;
+    public $alumno_id; // Almacena el user_id del alumno
+    public $nombre_alumno;
+    
+    // Propiedades del formulario
     public $modalidad = 'Pago Unico';
     public $monto_total;
     public $ciclo_id;
     public $estado = 'Pendiente';
     public $cuotas = [];
 
-    // CONTROL DE NAVEGACIÓN (Heurística #3: Libertad del usuario)
-    public $view = 'index'; // Valores: index, create, edit, show
+    // Navegación
+    public $view = 'index'; 
     public $viewingMatricula = null;
 
     protected function rules()
     {
         $rules = [
-            'selectedAlumno' => 'required',
-            'monto_total' => 'required|numeric',
-            'modalidad' => 'required',
+            'alumno_id' => 'required|exists:alumnos,user_id',
+            'monto_total' => 'required|numeric|min:1',
+            'modalidad' => 'required|in:Pago Unico,2 Cuotas,3 Cuotas',
             'estado' => 'required|in:Pendiente,Activa,Anulada',
             'cuotas.*.monto' => 'required|numeric',
             'cuotas.*.fecha_vencimiento' => 'required|date',
         ];
 
-        // Evidencia obligatoria solo si es creación nueva para la Cuota 1
+        // Solo exige voucher de la Cuota 1 si es un registro nuevo
         if ($this->view == 'create') {
             $rules['cuotas.1.evidencia'] = 'required|image|max:2048';
         }
@@ -49,25 +52,43 @@ class Matricula extends Component
         return $rules;
     }
 
+    // --- LÓGICA DE REACTIVIDAD ---
+
     public function updatedSearch()
     {
-        $this->selectedAlumno = null;
+        // Solo resetea si el usuario está borrando o cambiando el texto manualmente
+        if ($this->search !== $this->nombre_alumno) {
+            $this->alumno_id = null;
+            $this->nombre_alumno = null;
+        }
     }
 
-    public function selectAlumno($id)
+    public function updatedMontoTotal()
     {
-        $this->selectedAlumno = Alumno::with(['user', 'carrera', 'ciclo.area'])->findOrFail($id);
-        $this->ciclo_id = $this->selectedAlumno->ciclo_id;
-        $this->search = $this->selectedAlumno->user->name;
-        
-        if ($this->view == 'create') {
-            $this->resetCuotas();
-        }
+        $this->resetCuotas();
     }
 
     public function updatedModalidad()
     {
         $this->resetCuotas();
+    }
+
+    public function selectAlumno($id = null)
+    {
+        if (!$id) return;
+
+        $alumno = Alumno::with(['user', 'ciclo'])->find($id);
+        
+        if ($alumno) {
+            $this->alumno_id = $alumno->user_id;
+            $this->nombre_alumno = $alumno->user->name;
+            $this->search = $alumno->user->name;
+            $this->ciclo_id = $alumno->ciclo_id;
+            
+            if ($this->view == 'create') {
+                $this->resetCuotas();
+            }
+        }
     }
 
     private function resetCuotas()
@@ -80,8 +101,10 @@ class Matricula extends Component
         };
 
         for ($i = 1; $i <= $num; $i++) {
+            $montoIndividual = $this->monto_total ? round($this->monto_total / $num, 2) : 0;
+            
             $this->cuotas[$i] = [
-                'monto' => $this->monto_total ? ($this->monto_total / $num) : '',
+                'monto' => $montoIndividual > 0 ? $montoIndividual : '',
                 'fecha_vencimiento' => now()->addMonths($i-1)->format('Y-m-d'),
                 'evidencia' => null,
                 'existente_evidencia' => null,
@@ -89,10 +112,12 @@ class Matricula extends Component
         }
     }
 
+    // --- RENDERIZADO ---
+
     public function render()
     {
         return view('livewire.c-r-u-d.matricula', [
-            'resultados' => strlen($this->search) > 2 && !$this->selectedAlumno
+            'resultados' => (strlen($this->search) > 2 && !$this->alumno_id)
                 ? Alumno::with('user')
                     ->whereHas('user', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
                     ->orWhere('dni', 'like', "%{$this->search}%")
@@ -103,7 +128,7 @@ class Matricula extends Component
         ]);
     }
 
-    // --- ACCIONES DE NAVEGACIÓN ---
+    // --- ACCIONES ---
 
     public function create()
     {
@@ -112,16 +137,18 @@ class Matricula extends Component
         $this->resetCuotas();
     }
 
-    public function edit($id)
+    public function edit($id = null)
     {
+        if (!$id) return;
         $this->resetInputFields();
         $this->view = 'edit';
         $this->matricula_id = $id;
 
         $matricula = MatriculaModel::with(['alumno.user', 'pagos'])->findOrFail($id);
         
-        $this->selectedAlumno = $matricula->alumno;
-        $this->search = $matricula->alumno->user->name;
+        $this->alumno_id = $matricula->alumno_id;
+        $this->nombre_alumno = $matricula->alumno->user->name;
+        $this->search = $this->nombre_alumno;
         $this->ciclo_id = $matricula->ciclo_id;
         $this->monto_total = $matricula->monto_total;
         $this->modalidad = $matricula->modalidad;
@@ -138,19 +165,12 @@ class Matricula extends Component
         }
     }
 
-    public function show($id)
+    public function show($id = null)
     {
+        if (!$id) return;
         $this->viewingMatricula = MatriculaModel::with(['alumno.user', 'ciclo', 'pagos'])->findOrFail($id);
         $this->view = 'show';
     }
-
-    public function closeModal() // Este es el que usa el breadcrumb y el botón cancelar
-    {
-        $this->view = 'index';
-        $this->resetInputFields();
-    }
-
-    // --- LÓGICA DE PERSISTENCIA ---
 
     public function save()
     {
@@ -160,7 +180,7 @@ class Matricula extends Component
             $matricula = MatriculaModel::updateOrCreate(
                 ['id' => $this->matricula_id],
                 [
-                    'alumno_id' => $this->selectedAlumno->user_id,
+                    'alumno_id' => $this->alumno_id,
                     'ciclo_id' => $this->ciclo_id,
                     'monto_total' => $this->monto_total,
                     'modalidad' => $this->modalidad,
@@ -174,8 +194,10 @@ class Matricula extends Component
                     'fecha_vencimiento' => $data['fecha_vencimiento'],
                 ];
 
+                // Manejo de voucher
                 if (isset($data['evidencia']) && $data['evidencia']) {
                     $pagoData['evidencia'] = $data['evidencia']->store('vouchers', 'public');
+                    // Solo la cuota 1 se marca como pagada automáticamente al subir voucher
                     if ($index == 1) {
                         $pagoData['fecha_pago'] = now();
                         $pagoData['estado'] = 'Pagado';
@@ -189,12 +211,13 @@ class Matricula extends Component
             }
         });
 
-        session()->flash('message', $this->matricula_id ? 'Matrícula actualizada.' : 'Matrícula registrada.');
+        session()->flash('message', $this->matricula_id ? 'Matrícula actualizada.' : 'Matrícula registrada exitosamente.');
         $this->closeModal();
     }
 
-    public function delete($id)
+    public function delete($id = null)
     {
+        if (!$id) return;
         $matricula = MatriculaModel::findOrFail($id);
         foreach($matricula->pagos as $pago) {
             if($pago->evidencia) Storage::disk('public')->delete($pago->evidencia);
@@ -204,9 +227,15 @@ class Matricula extends Component
         session()->flash('message', 'Matrícula eliminada.');
     }
 
+    public function closeModal()
+    {
+        $this->view = 'index';
+        $this->resetInputFields();
+    }
+
     private function resetInputFields()
     {
-        $this->reset(['matricula_id', 'search', 'selectedAlumno', 'monto_total', 'modalidad', 'estado', 'cuotas', 'viewingMatricula']);
+        $this->reset(['matricula_id', 'search', 'alumno_id', 'nombre_alumno', 'monto_total', 'modalidad', 'estado', 'cuotas', 'viewingMatricula']);
         $this->resetValidation();
     }
 }
