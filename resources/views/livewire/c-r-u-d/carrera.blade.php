@@ -1,4 +1,4 @@
-<div class="py-8 bg-gray-50 min-h-screen font-sans antialiased">
+<div class="py-8 bg-gray-50 min-h-screen font-sans antialiased relative">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- 1. BREADCRUMBS -->
@@ -29,7 +29,7 @@
             </ol>
         </nav>
 
-        <!-- 2. MENSAJES DE ESTADO -->
+        <!-- 2. MENSAJES DE ÉXITO -->
         @if (session()->has('message'))
             <div x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)"
                  class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl flex justify-between items-center transition-all">
@@ -38,6 +38,18 @@
                     <span class="font-bold text-sm">{{ session('message') }}</span>
                 </div>
                 <button @click="show = false" class="text-emerald-400 hover:text-emerald-600 font-black text-xl transition-colors">&times;</button>
+            </div>
+        @endif
+
+        <!-- 2.1 MENSAJE DE ERROR (PARA INTEGRIDAD REFERENCIAL) -->
+        @if (session()->has('error'))
+            <div x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 6000)"
+                 class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 text-orange-800 shadow-sm rounded-r-xl flex justify-between items-center transition-all">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <span class="font-bold text-sm">{{ session('error') }}</span>
+                </div>
+                <button @click="show = false" class="text-orange-400 hover:text-orange-600 font-black text-xl transition-colors">&times;</button>
             </div>
         @endif
 
@@ -91,8 +103,7 @@
                                                 <button wire:click="edit({{ $car->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </button>
-                                                <button onclick="confirm('¿Eliminar carrera?') || event.stopImmediatePropagation()" 
-                                                        wire:click="delete({{ $car->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                                <button wire:click="confirmDelete({{ $car->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
                                             </div>
@@ -197,21 +208,21 @@
                     <form wire:submit.prevent="store" class="space-y-6 text-left">
                         <div class="space-y-2">
                             <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Nombre de la Carrera</label>
-                            <input type="text" wire:model="nombre" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 outline-none font-semibold">
-                            @error('nombre') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                            <input type="text" wire:model="nombre" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none font-semibold transition-all">
+                            @error('nombre') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="space-y-2">
                             <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Área Académica</label>
-                            <select wire:model="area_id" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 outline-none cursor-pointer font-semibold">
+                            <select wire:model="area_id" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none cursor-pointer font-semibold transition-all appearance-none">
                                 <option value="">Seleccione Área...</option>
                                 @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
                             </select>
-                            @error('area_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                            @error('area_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="flex justify-end gap-4 mt-10 pt-8 border-t border-gray-100">
-                            <button type="button" wire:click="volver" class="px-8 py-3 text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest">Descartar</button>
+                            <button type="button" wire:click="volver" class="px-8 py-3 text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">Descartar</button>
                             <button type="submit" class="px-10 py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center">
                                 <span wire:loading wire:target="store" class="mr-3 animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
                                 {{ $view == 'create' ? 'Crear Carrera' : 'Guardar Cambios' }}
@@ -222,4 +233,40 @@
             @endif
         </div>
     </div>
+
+    <!-- MODAL DE ELIMINACIÓN CORREGIDO -->
+    @if($carreraIdBeingDeleted)
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
+
+        <!-- Caja del Modal -->
+        <div class="relative bg-white rounded-2xl max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-2xl bg-red-50 border border-red-100">
+                        <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Confirmar Eliminación?</h3>
+                        <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
+                            Esta acción eliminará la carrera de forma permanente. Recuerde que si existen alumnos inscritos, el sistema impedirá el borrado para proteger la integridad académica.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-8 py-4 flex flex-col sm:flex-row-reverse gap-3 mt-2">
+                <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-100">
+                    Confirmar Eliminación
+                </button>
+                <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                    Descartar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>

@@ -33,6 +33,9 @@ class Matricula extends Component
     public $view = 'index'; 
     public $viewingMatricula = null;
 
+    // NUEVO: Propiedad para el modal de eliminación
+    public $matriculaIdBeingDeleted = null;
+
     protected function rules()
     {
         $rules = [
@@ -44,7 +47,6 @@ class Matricula extends Component
             'cuotas.*.fecha_vencimiento' => 'required|date',
         ];
 
-        // Solo exige voucher de la Cuota 1 si es un registro nuevo
         if ($this->view == 'create') {
             $rules['cuotas.1.evidencia'] = 'required|image|max:2048';
         }
@@ -56,7 +58,6 @@ class Matricula extends Component
 
     public function updatedSearch()
     {
-        // Solo resetea si el usuario está borrando o cambiando el texto manualmente
         if ($this->search !== $this->nombre_alumno) {
             $this->alumno_id = null;
             $this->nombre_alumno = null;
@@ -194,10 +195,8 @@ class Matricula extends Component
                     'fecha_vencimiento' => $data['fecha_vencimiento'],
                 ];
 
-                // Manejo de voucher
                 if (isset($data['evidencia']) && $data['evidencia']) {
                     $pagoData['evidencia'] = $data['evidencia']->store('vouchers', 'public');
-                    // Solo la cuota 1 se marca como pagada automáticamente al subir voucher
                     if ($index == 1) {
                         $pagoData['fecha_pago'] = now();
                         $pagoData['estado'] = 'Pagado';
@@ -215,16 +214,35 @@ class Matricula extends Component
         $this->closeModal();
     }
 
-    public function delete($id = null)
+    // --- NUEVA LÓGICA DE ELIMINACIÓN CON MODAL ---
+
+    public function confirmDelete($id)
     {
-        if (!$id) return;
-        $matricula = MatriculaModel::findOrFail($id);
-        foreach($matricula->pagos as $pago) {
-            if($pago->evidencia) Storage::disk('public')->delete($pago->evidencia);
+        $this->matriculaIdBeingDeleted = $id;
+    }
+
+    public function cancelDelete()
+    {
+        $this->matriculaIdBeingDeleted = null;
+    }
+
+    public function delete()
+    {
+        if ($this->matriculaIdBeingDeleted) {
+            $matricula = MatriculaModel::findOrFail($this->matriculaIdBeingDeleted);
+            
+            // Eliminar archivos físicos
+            foreach($matricula->pagos as $pago) {
+                if($pago->evidencia) Storage::disk('public')->delete($pago->evidencia);
+            }
+            
+            // Eliminar registros
+            $matricula->pagos()->delete();
+            $matricula->delete();
+
+            session()->flash('message', 'Matrícula eliminada.');
+            $this->matriculaIdBeingDeleted = null;
         }
-        $matricula->pagos()->delete();
-        $matricula->delete();
-        session()->flash('message', 'Matrícula eliminada.');
     }
 
     public function closeModal()
@@ -235,7 +253,18 @@ class Matricula extends Component
 
     private function resetInputFields()
     {
-        $this->reset(['matricula_id', 'search', 'alumno_id', 'nombre_alumno', 'monto_total', 'modalidad', 'estado', 'cuotas', 'viewingMatricula']);
+        $this->reset([
+            'matricula_id', 
+            'search', 
+            'alumno_id', 
+            'nombre_alumno', 
+            'monto_total', 
+            'modalidad', 
+            'estado', 
+            'cuotas', 
+            'viewingMatricula',
+            'matriculaIdBeingDeleted' // También se resetea aquí
+        ]);
         $this->resetValidation();
     }
 }

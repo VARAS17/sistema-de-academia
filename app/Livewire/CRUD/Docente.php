@@ -23,6 +23,9 @@ class Docente extends Component
     public $selectedCursos = []; 
     public $search = '';
 
+    // NUEVO: Propiedad para el modal de eliminación
+    public $docenteIdBeingDeleted = null;
+
     public function mount($id = null)
     {
         if ($id) { $this->edit($id); }
@@ -101,6 +104,7 @@ class Docente extends Component
                 $userData['password'] = Hash::make('password123');
             }
 
+            // Aquí se usa docente_id que en tu lógica parece representar el ID del User
             $user = User::updateOrCreate(['id' => $this->docente_id], $userData);
             if (!$user->hasRole('docente')) { $user->assignRole('docente'); }
 
@@ -120,11 +124,27 @@ class Docente extends Component
         $this->showIndex();
     }
 
-    public function delete($id)
+    // --- NUEVOS MÉTODOS PARA EL MODAL DE ELIMINACIÓN ---
+
+    public function confirmDelete($id)
     {
-        $user = User::findOrFail($id);
-        $user->delete();
-        session()->flash('message', 'Docente eliminado.');
+        // En tu lógica, el ID que recibes para eliminar es el del User
+        $this->docenteIdBeingDeleted = $id;
+    }
+
+    public function cancelDelete()
+    {
+        $this->docenteIdBeingDeleted = null;
+    }
+
+    public function delete()
+    {
+        if ($this->docenteIdBeingDeleted) {
+            $user = User::findOrFail($this->docenteIdBeingDeleted);
+            $user->delete();
+            session()->flash('message', 'Docente eliminado.');
+            $this->docenteIdBeingDeleted = null;
+        }
     }
 
     // --- MÉTODOS DE NAVEGACIÓN ---
@@ -135,13 +155,11 @@ class Docente extends Component
         $this->view = 'index';
     }
 
-    // Agregamos este para que coincida con el botón del front
     public function cancel()
     {
         $this->showIndex();
     }
 
-    // Agregamos este por si usas "volver" en algún lado
     public function volver()
     {
         $this->showIndex();
@@ -149,7 +167,7 @@ class Docente extends Component
 
     private function resetInputFields()
     {
-        $this->reset(['name', 'email', 'password', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 'selectedCursos', 'docente_id', 'selectedDocente']);
+        $this->reset(['name', 'email', 'password', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 'selectedCursos', 'docente_id', 'selectedDocente', 'docenteIdBeingDeleted']);
         $this->resetValidation();
     }
 }

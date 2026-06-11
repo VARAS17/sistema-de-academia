@@ -1,4 +1,4 @@
-<div class="p-4 md:p-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
+<div class="p-4 md:p-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900 relative">
     
     <!-- 1. SISTEMA DE BREADCRUMBS -->
     <nav class="flex mb-6 text-sm flex-wrap items-center text-gray-500" aria-label="Breadcrumb">
@@ -120,8 +120,8 @@
                                             <button wire:click="edit({{ $alumno->user_id }})" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm group">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                             </button>
-                                            <button onclick="confirm('¿Realmente desea eliminar este registro?') || event.stopImmediatePropagation()" 
-                                                    wire:click="delete({{ $alumno->user_id }})" 
+                                            <!-- BOTÓN ELIMINAR ACTUALIZADO -->
+                                            <button wire:click="confirmDelete({{ $alumno->user_id }})" 
                                                     class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
@@ -130,7 +130,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic">No se encontraron estudiantes registrados.</td>
+                                    <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">No se encontraron estudiantes registrados.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -160,19 +160,19 @@
                                 <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 border-b pb-2">Perfil Académico</h4>
                                 <div class="space-y-4">
                                     <div>
-                                        <p class="text-[9px] font-black text-indigo-400 uppercase">Carrera que postula</p>
+                                        <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Carrera que postula</p>
                                         <p class="text-sm font-bold text-gray-800">{{ $selectedAlumno->carrera->nombre }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-[9px] font-black text-indigo-400 uppercase">Área Académica</p>
+                                        <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Área Académica</p>
                                         <p class="text-sm font-bold text-gray-800">{{ $selectedAlumno->ciclo->area->nombre }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-[9px] font-black text-indigo-400 uppercase">Ciclo Actual</p>
+                                        <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Ciclo Actual</p>
                                         <p class="text-sm font-bold text-gray-800">{{ $selectedAlumno->ciclo->nombre }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-[9px] font-black text-indigo-400 uppercase">Email y Contacto</p>
+                                        <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Email y Contacto</p>
                                         <p class="text-sm font-bold text-gray-800">{{ $selectedAlumno->user->email }}</p>
                                         <p class="text-xs text-gray-400">{{ $selectedAlumno->telefono ?? 'Sin teléfono' }}</p>
                                     </div>
@@ -212,25 +212,25 @@
                             <div class="space-y-1">
                                 <label class="block text-sm font-bold text-gray-700 ml-1">Nombre Completo</label>
                                 <input wire:model="name" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none">
-                                @error('name') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('name') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="space-y-1">
                                 <label class="block text-sm font-bold text-gray-700 ml-1">Correo Electrónico</label>
                                 <input wire:model="email" type="email" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none">
-                                @error('email') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('email') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="space-y-1">
                                 <label class="block text-sm font-bold text-gray-700 ml-1">Contraseña {{ $view == 'edit' ? '(Opcional)' : '' }}</label>
                                 <input wire:model="password" type="password" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="••••••••">
-                                @error('password') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('password') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="space-y-1">
                                 <label class="block text-sm font-bold text-gray-700 ml-1">DNI (Solo números)</label>
                                 <input wire:model="dni" type="text" maxlength="8" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-mono">
-                                @error('dni') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('dni') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
                         </div>
 
@@ -245,7 +245,7 @@
                                     <option value="">Seleccione área...</option>
                                     @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
                                 </select>
-                                @error('area_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('area_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="space-y-1">
@@ -254,7 +254,7 @@
                                     <option value="">Seleccione ciclo...</option>
                                     @foreach($ciclos as $ciclo) <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option> @endforeach
                                 </select>
-                                @error('ciclo_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('ciclo_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="space-y-1">
@@ -263,7 +263,7 @@
                                     <option value="">Seleccione carrera...</option>
                                     @foreach($carreras as $carrera) <option value="{{ $carrera->id }}">{{ $carrera->nombre }}</option> @endforeach
                                 </select>
-                                @error('carrera_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                @error('carrera_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
                         </div>
                     </div>
@@ -282,4 +282,40 @@
             @endif
         </div>
     </div>
+
+    <!-- MODAL DE ELIMINACIÓN CORREGIDO -->
+    @if($alumnoIdBeingDeleted)
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop con desenfoque -->
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
+
+        <!-- Caja del Modal -->
+        <div class="relative bg-white rounded-2xl max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-2xl bg-red-50 border border-red-100">
+                        <svg class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Eliminar Alumno?</h3>
+                        <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
+                            Esta acción eliminará permanentemente al estudiante y su acceso al sistema. No se podrá recuperar su información académica.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-8 py-4 flex flex-col sm:flex-row-reverse gap-3 mt-2">
+                <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-100">
+                    Eliminar Permanentemente
+                </button>
+                <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                    Descartar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>

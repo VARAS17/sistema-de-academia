@@ -1,4 +1,4 @@
-<div class="py-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
+<div class="py-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900 relative">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- 1. BREADCRUMBS -->
@@ -107,7 +107,8 @@
                                                 <button wire:click="edit({{ $m->id }})" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </button>
-                                                <button wire:click="delete({{ $m->id }})" wire:confirm="¿Deseas eliminar permanentemente esta matrícula?" class="p-2 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition">
+                                                <!-- ACTUALIZADO: Sin mensaje de consola nativo -->
+                                                <button wire:click="confirmDelete({{ $m->id }})" class="p-2 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
                                             </div>
@@ -140,7 +141,7 @@
                                 <span class="bg-indigo-500 w-2 h-2 rounded-full mr-2"></span> 1. Información del Estudiante
                             </h3>
                             <div class="max-w-xl">
-                                @if(!$alumno_id) <!-- Cambiado de $selectedAlumno -->
+                                @if(!$alumno_id)
                                     <div class="relative group">
                                         <input type="text" wire:model.live="search" placeholder="Escriba Nombre o DNI del alumno..." 
                                                class="w-full p-4 bg-white border-2 border-gray-50 rounded-2xl shadow-sm focus:border-indigo-500 transition-all outline-none">
@@ -223,12 +224,10 @@
                                         <div>
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Monto Cuota</label>
                                             <input type="number" wire:model="cuotas.{{ $index }}.monto" class="mt-1 w-full p-2.5 bg-gray-50 border-gray-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all">
-                                            @error("cuotas.$index.monto") <p class="text-red-500 text-[9px] font-bold mt-1">{{ $message }}</p> @enderror
                                         </div>
                                         <div>
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Vencimiento</label>
                                             <input type="date" wire:model="cuotas.{{ $index }}.fecha_vencimiento" class="mt-1 w-full p-2.5 bg-gray-50 border-gray-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all">
-                                            @error("cuotas.$index.fecha_vencimiento") <p class="text-red-500 text-[9px] font-bold mt-1">{{ $message }}</p> @enderror
                                         </div>
                                         <div class="pt-2 border-t border-gray-50">
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter block mb-2">Comprobante de Pago</label>
@@ -239,7 +238,6 @@
                                                 </a>
                                             @endif
                                             <input type="file" wire:model="cuotas.{{ $index }}.evidencia" class="block w-full text-[9px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 cursor-pointer">
-                                            @error("cuotas.$index.evidencia") <p class="text-red-500 text-[9px] font-bold mt-1 italic">{{ $message }}</p> @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -250,12 +248,8 @@
                         <!-- 4. BOTONES -->
                         <div class="flex flex-col sm:flex-row justify-end gap-4 mt-12 pt-10 border-t border-gray-100">
                             <button type="button" wire:click="closeModal" class="px-8 py-3.5 text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">Cancelar</button>
-                            <button type="submit" class="px-12 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95 flex items-center justify-center">
-                                <span wire:loading.remove wire:target="save">{{ $view == 'create' ? 'Confirmar Registro' : 'Actualizar Matrícula' }}</span>
-                                <span wire:loading wire:target="save" class="flex items-center">
-                                    <svg class="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                    Procesando...
-                                </span>
+                            <button type="submit" class="px-10 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95 flex items-center justify-center">
+                                {{ $view == 'create' ? 'Confirmar Registro' : 'Actualizar Matrícula' }}
                             </button>
                         </div>
                     </form>
@@ -288,10 +282,6 @@
                                         <span class="text-xs font-bold text-gray-400">Inversión Total:</span>
                                         <span class="text-lg font-black text-gray-800 font-mono">S/ {{ number_format($viewingMatricula->monto_total, 2) }}</span>
                                     </div>
-                                    <div class="flex justify-between items-end border-b border-gray-50 pb-3">
-                                        <span class="text-xs font-bold text-gray-400">Modalidad:</span>
-                                        <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-tighter">{{ $viewingMatricula->modalidad }}</span>
-                                    </div>
                                     <div class="flex justify-between items-center">
                                         <span class="text-xs font-bold text-gray-400">Estado:</span>
                                         <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight {{ $viewingMatricula->estado == 'Activa' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
@@ -317,23 +307,13 @@
                                         </div>
                                         <div>
                                             <p class="font-black text-gray-800 text-base">S/ {{ number_format($pago->monto, 2) }}</p>
-                                            <p class="text-[11px] text-gray-400 font-bold flex items-center mt-1 uppercase tracking-tighter">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                                Vence: {{ \Carbon\Carbon::parse($pago->fecha_vencimiento)->format('d/m/Y') }}
-                                            </p>
+                                            <p class="text-[11px] text-gray-400 font-bold flex items-center mt-1 uppercase tracking-tighter">Vence: {{ \Carbon\Carbon::parse($pago->fecha_vencimiento)->format('d/m/Y') }}</p>
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="flex items-center justify-end gap-3">
-                                            @if($pago->evidencia)
-                                                <a href="{{ Storage::url($pago->evidencia) }}" target="_blank" class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">
-                                                    Ver Voucher
-                                                </a>
-                                            @endif
-                                            <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border-2 {{ $pago->estado == 'Pagado' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500' }}">
-                                                {{ $pago->estado }}
-                                            </span>
-                                        </div>
+                                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border-2 {{ $pago->estado == 'Pagado' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500' }}">
+                                            {{ $pago->estado }}
+                                        </span>
                                     </div>
                                 </div>
                                 @endforeach
@@ -345,4 +325,40 @@
 
         </div>
     </div>
+
+    <!-- MODAL DE ELIMINACIÓN CORREGIDO -->
+    @if($matriculaIdBeingDeleted)
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
+
+        <!-- Caja del Modal -->
+        <div class="relative bg-white rounded-[2rem] max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-2xl bg-red-50 border border-red-100 text-red-600">
+                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Eliminar Matrícula?</h3>
+                        <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
+                            Esta acción eliminará permanentemente el registro de matrícula y todos sus comprobantes de pago asociados del sistema. Esta operación no se puede deshacer.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-8 py-4 flex flex-col sm:flex-row-reverse gap-3 mt-2">
+                <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 shadow-lg shadow-red-100 transition-all active:scale-95">
+                    Eliminar Permanentemente
+                </button>
+                <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                    Descartar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>

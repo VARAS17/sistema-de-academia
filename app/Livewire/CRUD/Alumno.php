@@ -19,7 +19,7 @@ class Alumno extends Component
 
     public string $view = 'index';
     
-    // Propiedades corregidas para aceptar NULL (?string)
+    // Propiedades del formulario
     public $alumno_id = null; 
     public ?string $name = null;
     public ?string $email = null;
@@ -31,6 +31,9 @@ class Alumno extends Component
     
     public string $search = '';
     public $selectedAlumno;
+
+    // Propiedad para controlar el estado del modal de eliminación
+    public $alumnoIdBeingDeleted = null;
 
     protected function rules(): array
     {
@@ -65,6 +68,8 @@ class Alumno extends Component
         ]);
     }
 
+    // --- ACCIONES DE NAVEGACIÓN ---
+
     public function show($id) {
         $this->selectedAlumno = AlumnoModel::with(['user', 'ciclo.area', 'carrera', 'cursos'])->findOrFail($id);
         $this->view = 'show';
@@ -74,6 +79,83 @@ class Alumno extends Component
         $this->resetForm();
         $this->view = 'create';
     }
+
+    public function edit($id) {
+        $this->resetForm();
+        $alumno = AlumnoModel::with('user', 'ciclo')->findOrFail($id);
+        
+        $this->alumno_id = $alumno->user_id;
+        $this->name = $alumno->user->name;
+        $this->email = $alumno->user->email;
+        $this->dni = $alumno->dni;
+        $this->telefono = $alumno->telefono;
+        $this->area_id = $alumno->ciclo->area_id;
+        $this->ciclo_id = $alumno->ciclo_id;
+        $this->carrera_id = $alumno->carrera_id;
+        $this->view = 'edit';
+    }
+
+    public function showIndex() { 
+        $this->resetForm(); 
+        $this->view = 'index'; 
+    }
+
+    public function cancel() { 
+        $this->showIndex(); 
+    }
+
+    // --- LÓGICA DE ELIMINACIÓN (MODAL) ---
+
+    /**
+     * Prepara el ID para ser eliminado y abre el modal
+     */
+    public function confirmDelete($id) {
+        $this->alumnoIdBeingDeleted = $id;
+    }
+
+    /**
+     * Cancela la operación y cierra el modal
+     */
+    public function cancelDelete() {
+        $this->alumnoIdBeingDeleted = null;
+    }
+
+    /**
+     * Ejecuta la eliminación definitiva (sin parámetros)
+     */
+    public function delete() 
+    {
+        if ($this->alumnoIdBeingDeleted) {
+            try {
+                DB::transaction(function () {
+                    // 1. Buscamos al alumno (recordemos que su PK es user_id)
+                    $alumno = AlumnoModel::find($this->alumnoIdBeingDeleted);
+
+                    if ($alumno) {
+                        // 2. Eliminamos manualmente las matrículas (ya que el error viene de ahí)
+                        // Nota: Si usas un modelo Matricula, puedes usar $alumno->matriculas()->delete()
+                        DB::table('matriculas')->where('alumno_id', $alumno->user_id)->delete();
+
+                        // 3. Opcional: Si tienes otras tablas como 'asistencias' o 'notas' que fallen, 
+                        // también deberías borrarlas aquí.
+
+                        // 4. Finalmente borramos al Usuario. 
+                        // Gracias al 'onDelete(cascade)' de tu migración Alumnos, 
+                        // al borrar el User se borrará automáticamente el Alumno.
+                        User::where('id', $this->alumnoIdBeingDeleted)->delete();
+                    }
+                });
+
+                session()->flash('message', 'Alumno y sus registros relacionados eliminados correctamente.');
+            } catch (\Exception $e) {
+                session()->flash('error', 'No se pudo eliminar: ' . $e->getMessage());
+            }
+
+            $this->alumnoIdBeingDeleted = null;
+        }
+    }
+
+    // --- PERSISTENCIA (STORE / UPDATE) ---
 
     public function store() {
         $this->validate();
@@ -96,28 +178,14 @@ class Alumno extends Component
             ]);
         });
 
-        session()->flash('message', 'Alumno creado.');
+        session()->flash('message', 'Alumno registrado exitosamente.');
         $this->showIndex();
-    }
-
-    public function edit($id) {
-        $this->resetForm();
-        $alumno = AlumnoModel::with('user', 'ciclo')->findOrFail($id);
-        
-        $this->alumno_id = $alumno->user_id;
-        $this->name = $alumno->user->name;
-        $this->email = $alumno->user->email;
-        $this->dni = $alumno->dni;
-        $this->telefono = $alumno->telefono; // Ahora acepta NULL sin error
-        $this->area_id = $alumno->ciclo->area_id;
-        $this->ciclo_id = $alumno->ciclo_id;
-        $this->carrera_id = $alumno->carrera_id;
-        $this->view = 'edit';
     }
 
     public function update() {
         $this->validate();
         $alumno = AlumnoModel::findOrFail($this->alumno_id);
+        
         DB::transaction(function () use ($alumno) {
             $alumno->user->update([
                 'name' => $this->name,
@@ -131,23 +199,25 @@ class Alumno extends Component
                 'carrera_id' => $this->carrera_id,
             ]);
         });
-        session()->flash('message', 'Actualizado.');
+
+        session()->flash('message', 'Perfil de alumno actualizado.');
         $this->showIndex();
     }
 
-    public function delete($id) {
-        DB::transaction(function () use ($id) {
-            $alumno = AlumnoModel::findOrFail($id);
-            User::where('id', $alumno->user_id)->delete();
-        });
-        session()->flash('message', 'Eliminado.');
-    }
-
-    public function showIndex() { $this->resetForm(); $this->view = 'index'; }
-    public function cancel() { $this->showIndex(); }
-
     private function resetForm() { 
-        $this->reset(['alumno_id','name','email','password','dni','telefono','area_id','ciclo_id','carrera_id','selectedAlumno']); 
+        $this->reset([
+            'alumno_id',
+            'name',
+            'email',
+            'password',
+            'dni',
+            'telefono',
+            'area_id',
+            'ciclo_id',
+            'carrera_id',
+            'selectedAlumno',
+            'alumnoIdBeingDeleted'
+        ]); 
         $this->resetValidation();
     }
 }

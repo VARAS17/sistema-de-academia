@@ -11,16 +11,13 @@ class Ciclo extends Component
 {
     use WithPagination;
 
-    // Propiedades del formulario
     public $nombre, $area_id, $aula, $activo = true, $ciclo_id;
-    
-    // Propiedad para la vista de detalles
     public $selectedCiclo; 
-    
     public $search = '';
-    
-    // Control de vistas (index, create, edit, show)
     public $view = 'index'; 
+
+    // NUEVO: Propiedad para controlar el modal de eliminación
+    public $cicloIdBeingDeleted = null;
 
     protected function rules()
     {
@@ -48,7 +45,6 @@ class Ciclo extends Component
         ]);
     }
 
-    // NUEVO: Función para ver detalles y profesores
     public function show($id)
     {
         $this->selectedCiclo = CicloModel::with(['area', 'cursos.docentes.user'])->findOrFail($id);
@@ -85,7 +81,8 @@ class Ciclo extends Component
         $this->aula = '';
         $this->activo = true;
         $this->ciclo_id = null;
-        $this->selectedCiclo = null; // Limpiamos el ciclo seleccionado
+        $this->selectedCiclo = null;
+        $this->cicloIdBeingDeleted = null; // Resetear ID de eliminación
         $this->resetValidation();
     }
 
@@ -105,9 +102,25 @@ class Ciclo extends Component
         $this->volver();
     }
 
-    public function delete($id)
+    // NUEVO: Método para preparar la eliminación (abre el modal en la vista)
+    public function confirmDelete($id)
     {
-        CicloModel::find($id)->delete();
-        session()->flash('message', 'Ciclo eliminado.');
+        $this->cicloIdBeingDeleted = $id;
+    }
+
+    // NUEVO: Método para cancelar la eliminación
+    public function cancelDelete()
+    {
+        $this->cicloIdBeingDeleted = null;
+    }
+
+    // ACTUALIZADO: Método que ejecuta la eliminación definitiva
+    public function delete()
+    {
+        if ($this->cicloIdBeingDeleted) {
+            CicloModel::find($this->cicloIdBeingDeleted)->delete();
+            session()->flash('message', 'Ciclo eliminado.');
+            $this->cicloIdBeingDeleted = null;
+        }
     }
 }
