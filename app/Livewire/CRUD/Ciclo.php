@@ -14,9 +14,12 @@ class Ciclo extends Component
     // Propiedades del formulario
     public $nombre, $area_id, $aula, $activo = true, $ciclo_id;
     
+    // Propiedad para la vista de detalles
+    public $selectedCiclo; 
+    
     public $search = '';
     
-    // ESTO ES LO NUEVO: Control de vistas (index, create, edit)
+    // Control de vistas (index, create, edit, show)
     public $view = 'index'; 
 
     protected function rules()
@@ -45,14 +48,19 @@ class Ciclo extends Component
         ]);
     }
 
-    // Cambiamos a vista de creación
+    // NUEVO: Función para ver detalles y profesores
+    public function show($id)
+    {
+        $this->selectedCiclo = CicloModel::with(['area', 'cursos.docentes.user'])->findOrFail($id);
+        $this->view = 'show';
+    }
+
     public function create()
     {
         $this->resetInputFields();
         $this->view = 'create';
     }
 
-    // Cambiamos a vista de edición
     public function edit($id)
     {
         $ciclo = CicloModel::findOrFail($id);
@@ -65,7 +73,6 @@ class Ciclo extends Component
         $this->view = 'edit';
     }
 
-    // Método para volver al listado (Cancelar)
     public function volver()
     {
         $this->resetInputFields();
@@ -78,6 +85,7 @@ class Ciclo extends Component
         $this->aula = '';
         $this->activo = true;
         $this->ciclo_id = null;
+        $this->selectedCiclo = null; // Limpiamos el ciclo seleccionado
         $this->resetValidation();
     }
 
@@ -94,7 +102,7 @@ class Ciclo extends Component
 
         session()->flash('message', $this->ciclo_id ? 'Ciclo actualizado.' : 'Ciclo creado.');
 
-        $this->volver(); // Al terminar, regresamos al index
+        $this->volver();
     }
 
     public function delete($id)

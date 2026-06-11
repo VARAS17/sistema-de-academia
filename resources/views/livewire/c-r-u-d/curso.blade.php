@@ -1,7 +1,7 @@
 <div class="py-8 bg-gray-50 min-h-screen font-sans antialiased">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <!-- 1. BREADCRUMBS (Heurística: Reconocimiento antes que recuerdo) -->
+        <!-- 1. BREADCRUMBS -->
         <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
@@ -21,7 +21,7 @@
                     <div class="flex items-center">
                         <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                         <span class="ml-1 text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded md:ml-2">
-                            {{ $view == 'create' ? 'Nuevo Curso' : 'Editando Curso' }}
+                            @if($view == 'create') Nuevo Curso @elseif($view == 'edit') Editando Curso @else Detalles @endif
                         </span>
                     </div>
                 </li>
@@ -29,10 +29,10 @@
             </ol>
         </nav>
 
-        <!-- 2. MENSAJES DE ÉXITO (Heurística: Visibilidad del estado del sistema) -->
+        <!-- 2. MENSAJES DE ÉXITO -->
         @if (session()->has('message'))
             <div x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-                 class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl flex justify-between items-center animate-fade-in-down">
+                 class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl flex justify-between items-center transition-all">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                     <span class="font-bold text-sm">{{ session('message') }}</span>
@@ -47,7 +47,6 @@
             @if($view == 'index')
                 <div class="p-6">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                        <!-- Buscador con icono -->
                         <div class="relative w-full md:w-1/3 group">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -57,7 +56,6 @@
                                    placeholder="Buscar curso...">
                         </div>
                         
-                        <!-- Botón Principal con Sombra -->
                         <button wire:click="create" 
                                 class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center justify-center active:scale-95">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -69,7 +67,6 @@
                         <table class="w-full text-sm text-left">
                             <thead class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-center">ID</th>
                                     <th class="px-6 py-4">Nombre del Curso</th>
                                     <th class="px-6 py-4">Área Académica</th>
                                     <th class="px-6 py-4">Ciclo</th>
@@ -79,7 +76,6 @@
                             <tbody class="divide-y divide-gray-50">
                                 @forelse($cursos as $curso)
                                     <tr class="hover:bg-indigo-50/30 transition-colors group">
-                                        <td class="px-6 py-4 text-center font-mono text-gray-400 text-xs">#{{ $curso->id }}</td>
                                         <td class="px-6 py-4">
                                             <span class="text-sm font-bold text-gray-800 group-hover:text-indigo-700 transition-colors">{{ $curso->nombre }}</span>
                                         </td>
@@ -94,11 +90,14 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 text-center">
-                                            <div class="flex justify-center space-x-2">
-                                                <button wire:click="edit({{ $curso->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors" title="Editar">
+                                            <div class="flex justify-center space-x-1">
+                                                <button wire:click="show({{ $curso->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors" title="Ver Detalles">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                </button>
+                                                <button wire:click="edit({{ $curso->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </button>
-                                                <button onclick="confirm('¿Deseas eliminar este curso permanentemente?') || event.stopImmediatePropagation()" 
+                                                <button onclick="confirm('¿Deseas eliminar este curso?') || event.stopImmediatePropagation()" 
                                                         wire:click="delete({{ $curso->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
@@ -107,19 +106,57 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-12 text-center">
-                                            <div class="flex flex-col items-center">
-                                                <svg class="w-12 h-12 text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                                <p class="text-gray-400 font-medium italic text-sm">No se encontraron cursos registrados.</p>
-                                            </div>
-                                        </td>
+                                        <td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">No se encontraron cursos registrados.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-6">
-                        {{ $cursos->links() }}
+                    <div class="mt-6">{{ $cursos->links() }}</div>
+                </div>
+
+            <!-- VISTA: DETALLES (SHOW) -->
+            @elseif($view == 'show')
+                <div class="p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start border-b border-gray-100 pb-8 mb-8 gap-6">
+                        <div>
+                            <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1 block">Ficha Informativa del Curso</span>
+                            <h3 class="text-3xl font-black text-gray-800 mb-4">{{ $selectedCurso->nombre }}</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold border border-gray-200">ÁREA: {{ $selectedCurso->area->nombre }}</span>
+                                <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-100">CICLO: {{ $selectedCurso->ciclo->nombre }}</span>
+                            </div>
+                        </div>
+                        <button wire:click="volver" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-all text-sm active:scale-95">Volver al Listado</button>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 ml-1 flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            Profesores Asignados a este Curso
+                        </h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            @forelse($selectedCurso->docentes as $docente)
+                                <div class="bg-gray-50/50 border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:shadow-md transition-shadow">
+                                    <div class="h-12 w-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-100">
+                                        {{ substr($docente->user->name, 0, 1) }}
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <p class="text-sm font-black text-gray-800 truncate">{{ $docente->user->name }}</p>
+                                        <p class="text-xs text-indigo-500 font-bold">{{ $docente->especialidad }}</p>
+                                        <div class="flex items-center mt-1 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0V5"></path></svg>
+                                            DNI: {{ $docente->dni }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full py-12 border-2 border-dashed border-gray-100 rounded-3xl text-center">
+                                    <p class="text-gray-400 font-bold italic text-sm">No hay profesores asignados actualmente.</p>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
 
@@ -128,18 +165,12 @@
                 <div class="p-8 max-w-4xl mx-auto">
                     <div class="flex items-center justify-between mb-8 border-b border-gray-100 pb-4">
                         <div>
-                            <h2 class="text-2xl font-black text-gray-800 tracking-tight">
-                                {{ $view == 'create' ? 'Registro de Curso' : 'Edición de Curso' }}
-                            </h2>
+                            <h2 class="text-2xl font-black text-gray-800 tracking-tight">{{ $view == 'create' ? 'Registro de Curso' : 'Edición de Curso' }}</h2>
                             <p class="text-sm text-gray-500">Gestione la asignación académica del curso.</p>
-                        </div>
-                        <div class="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                         </div>
                     </div>
 
-                    <form wire:submit.prevent="{{ $view == 'create' ? 'store' : 'update' }}" class="space-y-6">
-                        <!-- Campo: Nombre -->
+                    <form wire:submit.prevent="store" class="space-y-6">
                         <div class="group">
                             <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Nombre Completo del Curso</label>
                             <input wire:model="nombre" type="text" 
@@ -149,53 +180,29 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <!-- Campo: Área -->
                             <div>
                                 <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Área Académica</label>
-                                <select wire:model.live="area_id" 
-                                        class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none cursor-pointer appearance-none">
+                                <select wire:model.live="area_id" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none cursor-pointer appearance-none">
                                     <option value="">Seleccione un área...</option>
-                                    @foreach($areas as $area)
-                                        <option value="{{ $area->id }}">{{ $area->nombre }}</option>
-                                    @endforeach
+                                    @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
                                 </select>
                                 @error('area_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
                             </div>
 
-                            <!-- Campo: Ciclo (Dependiente) -->
                             <div>
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1 {{ !$area_id ? 'text-gray-300' : '' }}">Ciclo de Estudios</label>
-                                <div class="relative">
-                                    <select wire:model="ciclo_id" 
-                                            class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed appearance-none" 
-                                            {{ !$area_id ? 'disabled' : '' }}>
-                                        <option value="">Seleccione un ciclo...</option>
-                                        @foreach($ciclos as $ciclo)
-                                            <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option>
-                                        @endforeach
-                                    </select>
-                                    @if(!$area_id)
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <svg class="h-4 w-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                                        </div>
-                                    @endif
-                                </div>
+                                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Ciclo de Estudios</label>
+                                <select wire:model="ciclo_id" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none disabled:opacity-50 appearance-none" {{ !$area_id ? 'disabled' : '' }}>
+                                    <option value="">Seleccione un ciclo...</option>
+                                    @foreach($ciclos as $ciclo) <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option> @endforeach
+                                </select>
                                 @error('ciclo_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
-                                @if(!$area_id)
-                                    <p class="text-indigo-400 text-[9px] mt-2 font-bold italic tracking-tighter uppercase">* Seleccione primero el área académica.</p>
-                                @endif
                             </div>
                         </div>
 
-                        <!-- Footer de botones -->
                         <div class="flex flex-col sm:flex-row justify-end gap-4 mt-12 pt-8 border-t border-gray-100">
-                            <button type="button" wire:click="volver" 
-                                    class="px-8 py-3 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest">
-                                Cancelar
-                            </button>
-                            <button type="submit" 
-                                    class="px-10 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center">
-                                <span wire:loading wire:target="store, update" class="mr-2 animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                            <button type="button" wire:click="volver" class="px-8 py-3 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest">Cancelar</button>
+                            <button type="submit" class="px-10 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center">
+                                <span wire:loading wire:target="store" class="mr-2 animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                                 {{ $view == 'create' ? 'Crear Curso' : 'Actualizar Curso' }}
                             </button>
                         </div>

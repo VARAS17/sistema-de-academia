@@ -1,7 +1,7 @@
 <div class="py-8 bg-gray-50 min-h-screen">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <!-- SECCIÓN: BREADCRUMBS (Heurística: Reconocimiento antes que recuerdo) -->
+        <!-- SECCIÓN: BREADCRUMBS -->
         <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
@@ -21,7 +21,7 @@
                     <div class="flex items-center">
                         <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                         <span class="ml-1 text-sm font-bold text-gray-400 md:ml-2 uppercase tracking-wider">
-                            {{ $view == 'create' ? 'Nuevo Registro' : 'Edición' }}
+                            @if($view == 'create') Nuevo Registro @elseif($view == 'edit') Edición @else Detalles @endif
                         </span>
                     </div>
                 </li>
@@ -29,7 +29,7 @@
             </ol>
         </nav>
 
-        <!-- MENSAJES FLASH (Heurística: Visibilidad del estado) -->
+        <!-- MENSAJES FLASH -->
         @if (session()->has('message'))
             <div x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)"
                  class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 p-4 shadow-sm mb-6 rounded-r-lg flex justify-between items-center transition-all">
@@ -65,7 +65,6 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr class="bg-gray-50">
-                                    <th class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">ID</th>
                                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Nombre del Ciclo</th>
                                     <th class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Área</th>
                                     <th class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">Aula</th>
@@ -76,7 +75,6 @@
                             <tbody class="divide-y divide-gray-100">
                                 @foreach($ciclos as $ciclo)
                                 <tr class="hover:bg-indigo-50/30 transition-colors group">
-                                    <td class="px-6 py-4 text-center text-xs font-mono text-gray-400">#{{ $ciclo->id }}</td>
                                     <td class="px-6 py-4">
                                         <span class="text-sm font-bold text-gray-800">{{ $ciclo->nombre }}</span>
                                     </td>
@@ -98,7 +96,10 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        <div class="flex justify-center space-x-2">
+                                        <div class="flex justify-center space-x-1">
+                                            <button wire:click="show({{ $ciclo->id }})" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Ver Detalles">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                            </button>
                                             <button wire:click="edit({{ $ciclo->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                             </button>
@@ -118,8 +119,95 @@
                     </div>
                 </div>
 
+            @elseif($view == 'show')
+                <!-- VISTA DE DETALLES (NUEVA) -->
+                <div class="p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start border-b border-gray-100 pb-8 mb-8 gap-6">
+                        <div>
+                            <h3 class="text-3xl font-black text-gray-800 mb-2">{{ $selectedCiclo->nombre }}</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-xl text-xs font-black uppercase tracking-wider">
+                                    {{ $selectedCiclo->area->nombre }}
+                                </span>
+                                <span class="px-4 py-1.5 {{ $selectedCiclo->activo ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }} rounded-xl text-xs font-black uppercase tracking-wider">
+                                    {{ $selectedCiclo->activo ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </div>
+                        </div>
+                        <button wire:click="volver" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-all text-sm">
+                            Volver al Listado
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Columna de Información General -->
+                        <div class="md:col-span-1 space-y-6">
+                            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                                <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Información de Ubicación</h4>
+                                <div class="flex items-center text-gray-700">
+                                    <div class="p-3 bg-white rounded-lg shadow-sm mr-4">
+                                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-400 font-bold uppercase">Aula Asignada</p>
+                                        <p class="text-lg font-bold text-gray-800">{{ $selectedCiclo->aula }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna de Profesores -->
+                        <div class="md:col-span-2">
+                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Profesores a Cargo de este Ciclo</h4>
+                            <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                                <table class="min-w-full divide-y divide-gray-100">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Docente</th>
+                                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Especialidad</th>
+                                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Cursos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-50">
+                                        @forelse($selectedCiclo->cursos->flatMap->docentes->unique('user_id') as $docente)
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center">
+                                                        <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-xs mr-3">
+                                                            {{ substr($docente->user->name, 0, 1) }}
+                                                        </div>
+                                                        <span class="text-sm font-bold text-gray-700">{{ $docente->user->name }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 text-sm text-gray-500">
+                                                    {{ $docente->especialidad ?? 'No especificada' }}
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach($docente->cursos->where('ciclo_id', $selectedCiclo->id) as $curso)
+                                                            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold border border-gray-200">
+                                                                {{ $curso->nombre }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="px-6 py-10 text-center text-gray-400 italic text-sm">
+                                                    No hay docentes asignados a cursos en este ciclo.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             @else
-                <!-- VISTA DE FORMULARIO -->
+                <!-- VISTA DE FORMULARIO (Create/Edit) -->
                 <div class="p-8 max-w-2xl mx-auto">
                     <div class="text-center mb-8">
                         <h3 class="text-2xl font-black text-gray-800">
@@ -177,10 +265,10 @@
         </div>
     </div>
 
-    <!-- Estilos adicionales para el Toggle personalizado (Opcional) -->
+    <!-- Estilos adicionales para el Toggle -->
     <style>
-        .toggle-checkbox:checked { @apply right-0 border-indigo-600; right: 0; border-color: #4f46e5; }
-        .toggle-checkbox:checked + .toggle-label { @apply bg-indigo-600; background-color: #4f46e5; }
+        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
         .toggle-checkbox { right: 50%; transition: all 0.3s; }
     </style>
 </div>

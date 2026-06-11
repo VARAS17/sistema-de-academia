@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Alumno extends Model
 {
-    // Definimos user_id como llave primaria manual
     protected $primaryKey = 'user_id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -31,6 +30,13 @@ class Alumno extends Model
 
     public function carrera(): BelongsTo { 
         return $this->belongsTo(Carrera::class); 
+    }
+
+    /**
+     * Relación para obtener los cursos del ciclo actual del alumno
+     */
+    public function cursos(): HasMany {
+        return $this->hasMany(Curso::class, 'ciclo_id', 'ciclo_id');
     }
 
     public function asistencias(): HasMany { 

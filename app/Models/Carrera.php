@@ -28,4 +28,12 @@ class Carrera extends Model
     {
         return $this->hasMany(Alumno::class, 'carrera_id');
     }
+
+    /**
+     * Relación: Obtener los ciclos que pertenecen al mismo área de esta carrera.
+     */
+    public function ciclos(): HasMany
+    {
+        return $this->hasMany(Ciclo::class, 'area_id', 'area_id');
+    }
 }

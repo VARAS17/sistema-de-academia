@@ -1,7 +1,7 @@
 <div class="py-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
-        <!-- 1. BREADCRUMBS (Consistencia HCI) -->
+        <!-- 1. BREADCRUMBS -->
         <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
@@ -134,20 +134,20 @@
                 <div class="p-8 max-w-5xl mx-auto animate-fade-in">
                     <form wire:submit.prevent="save" class="space-y-10">
                         
-                        <!-- 1. SELECCIÓN DE ALUMNO (Jerarquía Visual) -->
+                        <!-- 1. SELECCIÓN DE ALUMNO -->
                         <div class="bg-gray-50/50 p-6 rounded-2xl border-2 border-dashed border-gray-100">
                             <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center">
                                 <span class="bg-indigo-500 w-2 h-2 rounded-full mr-2"></span> 1. Información del Estudiante
                             </h3>
                             <div class="max-w-xl">
-                                @if(!$selectedAlumno)
+                                @if(!$alumno_id) <!-- Cambiado de $selectedAlumno -->
                                     <div class="relative group">
                                         <input type="text" wire:model.live="search" placeholder="Escriba Nombre o DNI del alumno..." 
                                                class="w-full p-4 bg-white border-2 border-gray-50 rounded-2xl shadow-sm focus:border-indigo-500 transition-all outline-none">
                                         @if(count($resultados) > 0)
                                             <ul class="absolute z-50 mt-2 w-full bg-white shadow-2xl rounded-2xl border border-gray-100 py-3 max-h-64 overflow-y-auto custom-scrollbar">
                                                 @foreach($resultados as $alumno)
-                                                    <li wire:click="selectAlumno({{ $alumno->id }})" class="px-5 py-3 hover:bg-indigo-50 cursor-pointer transition flex items-center justify-between group/item">
+                                                    <li wire:click="selectAlumno({{ $alumno->user_id }})" class="px-5 py-3 hover:bg-indigo-50 cursor-pointer transition flex items-center justify-between group/item">
                                                         <div>
                                                             <div class="font-bold text-gray-800 group-hover/item:text-indigo-700">{{ $alumno->user->name }}</div>
                                                             <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">DNI: {{ $alumno->dni }} • {{ $alumno->carrera->nombre ?? 'S/C' }}</div>
@@ -162,29 +162,29 @@
                                     <div class="flex items-center justify-between p-5 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-100 animate-fade-in">
                                         <div class="flex items-center">
                                             <div class="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center font-black mr-4 text-xl">
-                                                {{ strtoupper(substr($selectedAlumno->user->name, 0, 1)) }}
+                                                {{ strtoupper(substr($nombre_alumno, 0, 1)) }}
                                             </div>
                                             <div>
-                                                <div class="font-black text-lg leading-tight">{{ $selectedAlumno->user->name }}</div>
-                                                <div class="text-[10px] font-bold uppercase tracking-widest opacity-80">DNI: {{ $selectedAlumno->dni }} • Ciclo: {{ $selectedAlumno->ciclo->nombre ?? 'N/A' }}</div>
+                                                <div class="font-black text-lg leading-tight">{{ $nombre_alumno }}</div>
+                                                <div class="text-[10px] font-bold uppercase tracking-widest opacity-80">ID Referencia: {{ $alumno_id }}</div>
                                             </div>
                                         </div>
-                                        <button type="button" wire:click="$set('selectedAlumno', null)" class="p-2 hover:bg-white/10 rounded-xl transition group" title="Cambiar Alumno">
+                                        <button type="button" wire:click="$set('alumno_id', null)" class="p-2 hover:bg-white/10 rounded-xl transition group" title="Cambiar Alumno">
                                             <svg class="w-6 h-6 text-white/50 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                         </button>
                                     </div>
                                 @endif
-                                @error('selectedAlumno') <p class="text-red-500 text-[10px] font-bold uppercase mt-2 ml-2">{{ $message }}</p> @enderror
+                                @error('alumno_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-2 ml-2">{{ $message }}</p> @enderror
                             </div>
                         </div>
 
-                        <!-- 2. CONFIGURACIÓN (Heurística #4: Consistencia) -->
+                        <!-- 2. CONFIGURACIÓN -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <div class="space-y-2">
                                 <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Monto Total Carrera</label>
                                 <div class="relative group">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">S/</span>
-                                    <input type="number" step="0.01" wire:model="monto_total" class="w-full pl-10 p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700">
+                                    <input type="number" step="0.01" wire:model.live="monto_total" class="w-full pl-10 p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700">
                                 </div>
                                 @error('monto_total') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
                             </div>
@@ -208,7 +208,7 @@
                             </div>
                         </div>
 
-                        <!-- 3. CRONOGRAMA (Heurística #8: Diseño Estético) -->
+                        <!-- 3. CRONOGRAMA -->
                         <div class="space-y-6">
                             <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -223,10 +223,12 @@
                                         <div>
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Monto Cuota</label>
                                             <input type="number" wire:model="cuotas.{{ $index }}.monto" class="mt-1 w-full p-2.5 bg-gray-50 border-gray-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all">
+                                            @error("cuotas.$index.monto") <p class="text-red-500 text-[9px] font-bold mt-1">{{ $message }}</p> @enderror
                                         </div>
                                         <div>
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Vencimiento</label>
                                             <input type="date" wire:model="cuotas.{{ $index }}.fecha_vencimiento" class="mt-1 w-full p-2.5 bg-gray-50 border-gray-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all">
+                                            @error("cuotas.$index.fecha_vencimiento") <p class="text-red-500 text-[9px] font-bold mt-1">{{ $message }}</p> @enderror
                                         </div>
                                         <div class="pt-2 border-t border-gray-50">
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter block mb-2">Comprobante de Pago</label>
@@ -237,6 +239,7 @@
                                                 </a>
                                             @endif
                                             <input type="file" wire:model="cuotas.{{ $index }}.evidencia" class="block w-full text-[9px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 cursor-pointer">
+                                            @error("cuotas.$index.evidencia") <p class="text-red-500 text-[9px] font-bold mt-1 italic">{{ $message }}</p> @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -244,7 +247,7 @@
                             </div>
                         </div>
 
-                        <!-- 4. BOTONES (Heurística #3: Control y Libertad) -->
+                        <!-- 4. BOTONES -->
                         <div class="flex flex-col sm:flex-row justify-end gap-4 mt-12 pt-10 border-t border-gray-100">
                             <button type="button" wire:click="closeModal" class="px-8 py-3.5 text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">Cancelar</button>
                             <button type="submit" class="px-12 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95 flex items-center justify-center">
@@ -263,7 +266,6 @@
                 <div class="p-8 animate-fade-in">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         <div class="lg:col-span-1 space-y-6">
-                            <!-- Card Estudiante -->
                             <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden">
                                 <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
                                 <h4 class="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Alumno Matriculado</h4>
@@ -277,7 +279,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Card Estado Resumen -->
                             <div class="bg-white rounded-3xl p-8 border-2 border-gray-50 shadow-sm">
                                 <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center">
                                     <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></span> Resumen Financiero
@@ -301,7 +302,6 @@
                             </div>
                         </div>
 
-                        <!-- Timeline de Pagos -->
                         <div class="lg:col-span-2 space-y-6">
                             <h3 class="text-xl font-black text-gray-800 tracking-tight flex items-center">
                                 <svg class="w-6 h-6 mr-3 text-indigo-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>

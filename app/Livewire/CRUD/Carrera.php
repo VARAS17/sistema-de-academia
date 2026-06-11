@@ -11,10 +11,12 @@ class Carrera extends Component
 {
     use WithPagination;
 
-    // Cambiamos isOpen por view para manejar la navegación por estados
     public $view = 'index'; 
     public $nombre, $area_id, $carrera_id;
     public $search = '';
+    
+    // Propiedad para la vista de detalle
+    public $selectedCarrera;
 
     protected function rules()
     {
@@ -38,7 +40,20 @@ class Carrera extends Component
         ]);
     }
 
-    // Heurística #3: Control y libertad del usuario
+    // --- NUEVO: Método para ver detalles ---
+    public function show($id)
+    {
+        // Cargamos la carrera con su área, los ciclos de esa área y los alumnos con su identidad
+        $this->selectedCarrera = CarreraModel::with([
+            'area', 
+            'ciclos', 
+            'alumnos.user', 
+            'alumnos.ciclo'
+        ])->findOrFail($id);
+        
+        $this->view = 'show';
+    }
+
     public function create()
     {
         $this->resetInputFields();
@@ -47,13 +62,13 @@ class Carrera extends Component
 
     public function volver()
     {
-        $this->view = 'index';
         $this->resetInputFields();
+        $this->view = 'index';
     }
 
     private function resetInputFields()
     {
-        $this->reset(['nombre', 'area_id', 'carrera_id']);
+        $this->reset(['nombre', 'area_id', 'carrera_id', 'selectedCarrera']);
         $this->resetValidation();
     }
 
@@ -67,8 +82,6 @@ class Carrera extends Component
         ]);
 
         session()->flash('message', $this->carrera_id ? 'Carrera actualizada con éxito.' : 'Carrera registrada con éxito.');
-        
-        // Al terminar, volvemos al listado (Visibilidad del estado del sistema)
         $this->volver();
     }
 

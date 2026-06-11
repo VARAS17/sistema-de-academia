@@ -44,6 +44,17 @@ class Ciclo extends Model
         return $this->hasMany(ControlAsistencia::class, 'ciclo_id');
     }
 
+    /**
+     * Obtiene todos los docentes que dictan cursos en este ciclo.
+     */
+    public function docentes()
+    {
+        // Buscamos los docentes que tengan al menos un curso asociado a este ciclo_id
+        return \App\Models\Docente::whereHas('cursos', function($query) {
+            $query->where('ciclo_id', $this->id);
+        });
+    }
+
 
     public function horarios()
     {
