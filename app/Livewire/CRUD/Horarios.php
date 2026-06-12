@@ -23,8 +23,12 @@ class Horarios extends Component
     public $ciclos = []; 
     public $ciclos_filtro = [];
 
+    // Propiedades para Modal de Eliminación
+    public $confirmandoEliminacion = false;
+    public $horario_id_eliminar;
+
     // Control de navegación
-    public $view = 'index'; // Valores: index, create, edit
+    public $view = 'index'; 
 
     public function mount()
     {
@@ -52,29 +56,35 @@ class Horarios extends Component
         $this->filtro_ciclo = null;
     }
 
-    public function render()
+    // --- Métodos de Confirmación de Eliminación ---
+
+    public function abrirConfirmacionEliminacion($id)
     {
-        $user = Auth::user();
-        $query = Horario::query()->with(['area', 'ciclo']);
+        if (!Auth::user()->hasRole('admin')) return;
+        $this->horario_id_eliminar = $id;
+        $this->confirmandoEliminacion = true;
+    }
 
-        // Lógica de filtrado
-        if ($user->hasRole('admin')) {
-            if ($this->filtro_area) $query->where('area_id', $this->filtro_area);
-            if ($this->filtro_ciclo) $query->where('ciclo_id', $this->filtro_ciclo);
-        } else {
-            $perfil = $user->alumno;
-            if ($perfil && $perfil->carrera && $perfil->ciclo_id) {
-                $query->where('area_id', $perfil->carrera->area_id)
-                      ->where('ciclo_id', $perfil->ciclo_id);
-            } else {
-                $query->whereRaw('1 = 0');
-            }
+    public function cerrarConfirmacionEliminacion()
+    {
+        $this->confirmandoEliminacion = false;
+        $this->horario_id_eliminar = null;
+    }
+
+    public function delete()
+    {
+        if (!Auth::user()->hasRole('admin')) return;
+
+        $horario = Horario::findOrFail($this->horario_id_eliminar);
+        
+        if($horario->imagen) {
+            Storage::disk('public')->delete($horario->imagen);
         }
-
-        return view('livewire.c-r-u-d.horarios', [
-            'horarios' => $query->latest()->get(),
-            'breadcrumbs' => $this->getBreadcrumbs()
-        ]);
+        
+        $horario->delete();
+        
+        $this->cerrarConfirmacionEliminacion();
+        session()->flash('message', 'Horario eliminado correctamente.');
     }
 
     // --- Gestión de Breadcrumbs dinámicos ---
@@ -152,15 +162,7 @@ class Horarios extends Component
         Horario::updateOrCreate(['id' => $this->horario_id], $data);
 
         session()->flash('message', 'Operación exitosa.');
-        $this->cancel(); // Regresa al index y limpia campos
-    }
-
-    public function delete($id)
-    {
-        if (!Auth::user()->hasRole('admin')) return;
-        $horario = Horario::findOrFail($id);
-        if($horario->imagen) Storage::disk('public')->delete($horario->imagen);
-        $horario->delete();
+        $this->cancel();
     }
 
     public function resetFields() 
@@ -171,5 +173,31 @@ class Horarios extends Component
         $this->imagen = null; 
         $this->horario_id = null; 
         $this->ciclos = [];
+        $this->confirmandoEliminacion = false;
+        $this->horario_id_eliminar = null;
+    }
+
+    public function render()
+    {
+        $user = Auth::user();
+        $query = Horario::query()->with(['area', 'ciclo']);
+
+        if ($user->hasRole('admin')) {
+            if ($this->filtro_area) $query->where('area_id', $this->filtro_area);
+            if ($this->filtro_ciclo) $query->where('ciclo_id', $this->filtro_ciclo);
+        } else {
+            $perfil = $user->alumno;
+            if ($perfil && $perfil->carrera && $perfil->ciclo_id) {
+                $query->where('area_id', $perfil->carrera->area_id)
+                      ->where('ciclo_id', $perfil->ciclo_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        return view('livewire.c-r-u-d.horarios', [
+            'horarios' => $query->latest()->get(),
+            'breadcrumbs' => $this->getBreadcrumbs()
+        ]);
     }
 }

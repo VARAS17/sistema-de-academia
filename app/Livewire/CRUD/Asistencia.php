@@ -16,12 +16,15 @@ class Asistencia extends Component
     public $cicloSeleccionado;
     public $areaSeleccionada;
     public $controlSeleccionado;
+    
+    // Propiedades para el formulario y filtros
     public $fecha, $turno = 'mañana';
     public $search = '';
 
-    // Propiedades para rol de alumno
+    // Propiedades de estado para Alumnos y Modales
     public $esAlumno = false;
     public $alumnoPerfil = null;
+    public $confirmandoCierre = false;
 
     public function mount()
     {
@@ -51,6 +54,10 @@ class Asistencia extends Component
             $this->breadcrumb[] = ['name' => $nombre, 'step' => 2];
         }
 
+        if ($this->step == 4) {
+            $this->breadcrumb[] = ['name' => 'Nueva Sesión', 'step' => 4];
+        }
+
         if ($this->step == 3 && $this->controlSeleccionado) {
             $this->breadcrumb[] = [
                 'name' => "Clase: " . date('d/m/y', strtotime($this->controlSeleccionado->fecha)), 
@@ -61,14 +68,14 @@ class Asistencia extends Component
 
     public function goToStep($step)
     {
-        if ($this->esAlumno && $step == 1) return;
+        if ($this->esAlumno && ($step == 1 || $step == 4)) return;
 
         $this->step = $step;
         if ($step == 1) {
-            $this->reset(['cicloSeleccionado', 'areaSeleccionada', 'controlSeleccionado']);
+            $this->reset(['cicloSeleccionado', 'areaSeleccionada', 'controlSeleccionado', 'confirmandoCierre']);
         }
         if ($step == 2) {
-            $this->reset(['controlSeleccionado']);
+            $this->reset(['controlSeleccionado', 'confirmandoCierre']);
         }
         $this->setBreadcrumb();
     }
@@ -86,7 +93,17 @@ class Asistencia extends Component
         $this->setBreadcrumb();
     }
 
-    public function crearControl()
+    // --- Lógica del Paso 4 (Creación) ---
+
+    public function mostrarFormularioCreacion()
+    {
+        if ($this->esAlumno) return;
+        $this->fecha = date('Y-m-d');
+        $this->step = 4;
+        $this->setBreadcrumb();
+    }
+
+    public function guardarControl()
     {
         if ($this->esAlumno) return;
 
@@ -95,6 +112,7 @@ class Asistencia extends Component
             'turno' => 'required|in:mañana,tarde,noche',
         ]);
 
+        // Evitar duplicados para el mismo día y turno en el mismo ciclo
         $existe = ControlAsistencia::where([
             'ciclo_id' => $this->cicloSeleccionado['id'],
             'fecha' => $this->fecha,
@@ -117,6 +135,8 @@ class Asistencia extends Component
 
         $this->abrirControl($nuevoControl->id);
     }
+
+    // --- Lógica de Gestión de Sesión ---
 
     public function abrirControl($id)
     {
@@ -143,7 +163,7 @@ class Asistencia extends Component
         Marcacion::updateOrCreate(
             [
                 'control_asistencia_id' => $this->controlSeleccionado->id,
-                'alumno_id' => $userId // Aquí usamos el user_id que llega del front
+                'alumno_id' => $userId 
             ],
             [
                 'estado' => $nuevoEstado,
@@ -152,10 +172,26 @@ class Asistencia extends Component
         );
     }
 
+    // --- Lógica del Modal de Confirmación ---
+
+    public function abrirConfirmacionCierre()
+    {
+        if ($this->esAlumno) return;
+        $this->confirmandoCierre = true;
+    }
+
+    public function cerrarConfirmacionCierre()
+    {
+        $this->confirmandoCierre = false;
+    }
+
     public function cerrarControl()
     {
         if ($this->esAlumno) return;
+
         $this->controlSeleccionado->update(['estado' => 'cerrado']);
+        $this->confirmandoCierre = false;
+        $this->setBreadcrumb();
     }
 
     public function render()

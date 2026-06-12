@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire\CRUD;
 
 use App\Models\Simulacro;
@@ -17,9 +18,14 @@ class Simulacros extends Component
     public $view = 'index';
 
     // Propiedades del formulario
-    public $nombre, $area_id, $ciclo_id, $fecha, $puntaje_maximo = 1000, $simulacro_id;
+    public $nombre, $area_id, $ciclo_id, $fecha, $simulacro_id;
+    public $puntaje_maximo = 400; // Valor por defecto
     
     public $search = '';
+
+    // Propiedades para Modal de Eliminación
+    public $confirmandoEliminacion = false;
+    public $simulacro_id_eliminar;
 
     protected function rules()
     {
@@ -28,7 +34,6 @@ class Simulacros extends Component
             'area_id' => 'required|exists:areas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'fecha' => 'required|date',
-            'puntaje_maximo' => 'required|numeric|min:0',
         ];
     }
 
@@ -60,18 +65,41 @@ class Simulacros extends Component
         $this->area_id = $simulacro->area_id;
         $this->ciclo_id = $simulacro->ciclo_id;
         $this->fecha = $simulacro->fecha->format('Y-m-d');
-        $this->puntaje_maximo = $simulacro->puntaje_maximo;
+        // No cargamos puntaje_maximo del modelo para mantener siempre el 400
         
         $this->view = 'edit';
     }
 
     private function resetInputFields()
     {
-        $this->reset(['nombre', 'area_id', 'ciclo_id', 'fecha', 'puntaje_maximo', 'simulacro_id']);
+        $this->reset(['nombre', 'area_id', 'ciclo_id', 'fecha', 'simulacro_id', 'confirmandoEliminacion', 'simulacro_id_eliminar']);
+        $this->puntaje_maximo = 400; // Asegurar el valor por defecto
         $this->resetValidation();
     }
 
-    // --- Acciones ---
+    // --- Gestión de Eliminación (Modal Personalizado) ---
+
+    public function abrirConfirmacionEliminacion($id)
+    {
+        $this->simulacro_id_eliminar = $id;
+        $this->confirmandoEliminacion = true;
+    }
+
+    public function cerrarConfirmacionEliminacion()
+    {
+        $this->confirmandoEliminacion = false;
+        $this->simulacro_id_eliminar = null;
+    }
+
+    public function delete()
+    {
+        Simulacro::findOrFail($this->simulacro_id_eliminar)->delete();
+        
+        $this->cerrarConfirmacionEliminacion();
+        session()->flash('message', 'Simulacro eliminado correctamente.');
+    }
+
+    // --- Acciones de Guardado ---
 
     public function store()
     {
@@ -82,17 +110,11 @@ class Simulacros extends Component
             'area_id' => $this->area_id,
             'ciclo_id' => $this->ciclo_id,
             'fecha' => $this->fecha,
-            'puntaje_maximo' => $this->puntaje_maximo,
+            'puntaje_maximo' => 400, // Siempre se guarda con 400
         ]);
 
         session()->flash('message', $this->simulacro_id ? 'Simulacro actualizado.' : 'Simulacro creado.');
         $this->showIndex();
-    }
-
-    public function delete($id)
-    {
-        Simulacro::find($id)->delete();
-        session()->flash('message', 'Simulacro eliminado.');
     }
 
     public function render()
