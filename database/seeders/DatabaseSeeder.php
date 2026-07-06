@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             AreaSeeder::class,
             CicloSeeder::class,
-            // CarreraSeeder::class, (Si llegas a crear uno para las carreras)
+            CarreraSeeder::class,
         ]);
     }
 }

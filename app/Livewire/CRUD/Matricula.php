@@ -3,6 +3,9 @@
 namespace App\Livewire\CRUD;
 
 use App\Models\Alumno;
+use App\Models\Ciclo;
+use App\Models\Carrera;
+use App\Models\Area;
 use App\Models\Matricula as MatriculaModel;
 use App\Models\PagoMatricula;
 use Illuminate\Support\Facades\DB;
@@ -16,94 +19,82 @@ class Matricula extends Component
 {
     use WithPagination, WithFileUploads;
 
-    // Propiedades de control y búsqueda
-    public $matricula_id; 
+    // Propiedades de navegación y búsqueda
+    public string $view = 'index'; 
     public $search = '';
-    public $alumno_id; // Almacena el user_id del alumno
+    public $viewingMatricula = null;
+    public $matriculaIdBeingDeleted = null;
+
+    // Propiedades del Alumno Seleccionado
+    public $alumno_id; // PK de la tabla alumnos (user_id)
     public $nombre_alumno;
-    
-    // Propiedades del formulario
+
+    // Propiedades del Formulario de Matrícula
+    public $matricula_id = null;
+    public $area_id;
+    public $ciclo_id;
+    public $carrera_id;
     public $modalidad = 'Pago Unico';
     public $monto_total;
-    public $ciclo_id;
-    public $estado = 'Pendiente';
+    public $estado = 'Activa';
     public $cuotas = [];
-
-    // Navegación
-    public $view = 'index'; 
-    public $viewingMatricula = null;
-
-    // NUEVO: Propiedad para el modal de eliminación
-    public $matriculaIdBeingDeleted = null;
 
     protected function rules()
     {
-        $rules = [
-            'alumno_id' => 'required|exists:alumnos,user_id',
+        return [
+            'alumno_id'   => 'required|exists:alumnos,user_id',
+            'area_id'     => 'required|exists:areas,id',
+            'ciclo_id'    => 'required|exists:ciclos,id',
+            'carrera_id'  => 'required|exists:carreras,id',
             'monto_total' => 'required|numeric|min:1',
-            'modalidad' => 'required|in:Pago Unico,2 Cuotas,3 Cuotas',
-            'estado' => 'required|in:Pendiente,Activa,Anulada',
-            'cuotas.*.monto' => 'required|numeric',
+            'modalidad'   => 'required|in:Pago Unico,2 Cuotas,3 Cuotas',
+            'estado'      => 'required|in:Pendiente,Activa,Anulada',
+            'cuotas.*.monto'             => 'required|numeric',
             'cuotas.*.fecha_vencimiento' => 'required|date',
+            'cuotas.1.evidencia'         => $this->view === 'create' ? 'required|image|max:2048' : 'nullable',
         ];
-
-        if ($this->view == 'create') {
-            $rules['cuotas.1.evidencia'] = 'required|image|max:2048';
-        }
-
-        return $rules;
     }
 
-    // --- LÓGICA DE REACTIVIDAD ---
+    // --- CICLO DE VIDA Y REACTIVIDAD ---
 
-    public function updatedSearch()
+    public function updatedAreaId($value)
     {
-        if ($this->search !== $this->nombre_alumno) {
-            $this->alumno_id = null;
-            $this->nombre_alumno = null;
-        }
+        $this->ciclo_id = null;
+        $this->carrera_id = null;
     }
 
     public function updatedMontoTotal()
     {
-        $this->resetCuotas();
+        $this->generarCuotas();
     }
 
     public function updatedModalidad()
     {
-        $this->resetCuotas();
+        $this->generarCuotas();
     }
 
-    public function selectAlumno($id = null)
+    public function selectAlumno($id)
     {
-        if (!$id) return;
-
-        $alumno = Alumno::with(['user', 'ciclo'])->find($id);
-        
+        $alumno = Alumno::with('user')->find($id);
         if ($alumno) {
             $this->alumno_id = $alumno->user_id;
             $this->nombre_alumno = $alumno->user->name;
             $this->search = $alumno->user->name;
-            $this->ciclo_id = $alumno->ciclo_id;
-            
-            if ($this->view == 'create') {
-                $this->resetCuotas();
-            }
         }
     }
 
-    private function resetCuotas()
+    private function generarCuotas()
     {
         $this->cuotas = [];
         $num = match($this->modalidad) {
             '2 Cuotas' => 2,
             '3 Cuotas' => 3,
-            default => 1,
+            default    => 1,
         };
 
+        $montoIndividual = $this->monto_total ? round($this->monto_total / $num, 2) : 0;
+
         for ($i = 1; $i <= $num; $i++) {
-            $montoIndividual = $this->monto_total ? round($this->monto_total / $num, 2) : 0;
-            
             $this->cuotas[$i] = [
                 'monto' => $montoIndividual > 0 ? $montoIndividual : '',
                 'fecha_vencimiento' => now()->addMonths($i-1)->format('Y-m-d'),
@@ -118,131 +109,134 @@ class Matricula extends Component
     public function render()
     {
         return view('livewire.c-r-u-d.matricula', [
-            'resultados' => (strlen($this->search) > 2 && !$this->alumno_id)
+            'alumnos_busqueda' => (strlen($this->search) > 2 && !$this->alumno_id)
                 ? Alumno::with('user')
                     ->whereHas('user', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
                     ->orWhere('dni', 'like', "%{$this->search}%")
                     ->take(5)->get() 
                 : [],
             'matriculas' => MatriculaModel::with(['alumno.user', 'ciclo', 'pagos'])
-                ->orderBy('created_at', 'desc')->paginate(10)
+                ->orderByDesc('created_at')->paginate(10),
+            'areas'    => Area::orderBy('nombre')->get(),
+            'ciclos'   => $this->area_id ? Ciclo::where('area_id', $this->area_id)->get() : collect(),
+            'carreras' => $this->area_id ? Carrera::where('area_id', $this->area_id)->get() : collect(),
         ]);
     }
 
-    // --- ACCIONES ---
+    // --- ACCIONES CRUD ---
 
     public function create()
     {
         $this->resetInputFields();
         $this->view = 'create';
-        $this->resetCuotas();
+        $this->generarCuotas();
     }
 
-    public function edit($id = null)
+    public function edit($id)
     {
-        if (!$id) return;
         $this->resetInputFields();
-        $this->view = 'edit';
-        $this->matricula_id = $id;
-
-        $matricula = MatriculaModel::with(['alumno.user', 'pagos'])->findOrFail($id);
+        $matricula = MatriculaModel::with(['alumno.user', 'pagos', 'ciclo'])->findOrFail($id);
         
-        $this->alumno_id = $matricula->alumno_id;
+        $this->matricula_id  = $matricula->id;
+        $this->alumno_id     = $matricula->alumno_id;
         $this->nombre_alumno = $matricula->alumno->user->name;
-        $this->search = $this->nombre_alumno;
-        $this->ciclo_id = $matricula->ciclo_id;
-        $this->monto_total = $matricula->monto_total;
-        $this->modalidad = $matricula->modalidad;
-        $this->estado = $matricula->estado;
+        $this->search        = $this->nombre_alumno;
+        $this->area_id       = $matricula->ciclo->area_id;
+        $this->ciclo_id      = $matricula->ciclo_id;
+        $this->carrera_id    = $matricula->carrera_id;
+        $this->monto_total   = $matricula->monto_total;
+        $this->modalidad     = $matricula->modalidad;
+        $this->estado        = $matricula->estado;
 
         foreach ($matricula->pagos as $pago) {
             $this->cuotas[$pago->numero_cuota] = [
                 'id' => $pago->id,
                 'monto' => $pago->monto,
-                'fecha_vencimiento' => Carbon::parse($pago->fecha_vencimiento)->format('Y-m-d'),
+                'fecha_vencimiento' => $pago->fecha_vencimiento,
                 'evidencia' => null,
                 'existente_evidencia' => $pago->evidencia,
             ];
         }
-    }
-
-    public function show($id = null)
-    {
-        if (!$id) return;
-        $this->viewingMatricula = MatriculaModel::with(['alumno.user', 'ciclo', 'pagos'])->findOrFail($id);
-        $this->view = 'show';
+        $this->view = 'edit';
     }
 
     public function save()
     {
         $this->validate();
 
-        DB::transaction(function () {
-            $matricula = MatriculaModel::updateOrCreate(
-                ['id' => $this->matricula_id],
-                [
-                    'alumno_id' => $this->alumno_id,
-                    'ciclo_id' => $this->ciclo_id,
-                    'monto_total' => $this->monto_total,
-                    'modalidad' => $this->modalidad,
-                    'estado' => $this->estado
-                ]
-            );
+        try {
+            DB::transaction(function () {
+                // 1. Crear o Actualizar la Matrícula (Cabecera)
+                $matricula = MatriculaModel::updateOrCreate(
+                    ['id' => $this->matricula_id],
+                    [
+                        'alumno_id'   => $this->alumno_id,
+                        'ciclo_id'    => $this->ciclo_id,
+                        'carrera_id'  => $this->carrera_id,
+                        'monto_total' => $this->monto_total,
+                        'modalidad'   => $this->modalidad,
+                        'estado'      => $this->estado
+                    ]
+                );
 
-            foreach ($this->cuotas as $index => $data) {
-                $pagoData = [
-                    'monto' => $data['monto'],
-                    'fecha_vencimiento' => $data['fecha_vencimiento'],
-                ];
+                // 2. Gestionar los Pagos (Detalle)
+                foreach ($this->cuotas as $numero => $data) {
+                    $pagoData = [
+                        'monto' => $data['monto'],
+                        'fecha_vencimiento' => $data['fecha_vencimiento'],
+                    ];
 
-                if (isset($data['evidencia']) && $data['evidencia']) {
-                    $pagoData['evidencia'] = $data['evidencia']->store('vouchers', 'public');
-                    if ($index == 1) {
+                    // Subida de Voucher si existe
+                    if (isset($data['evidencia']) && $data['evidencia']) {
+                        $pagoData['evidencia'] = $data['evidencia']->store('vouchers', 'public');
                         $pagoData['fecha_pago'] = now();
                         $pagoData['estado'] = 'Pagado';
                     }
+
+                    PagoMatricula::updateOrCreate(
+                        ['matricula_id' => $matricula->id, 'numero_cuota' => $numero],
+                        $pagoData
+                    );
                 }
+            });
 
-                PagoMatricula::updateOrCreate(
-                    ['matricula_id' => $matricula->id, 'numero_cuota' => $index],
-                    $pagoData
-                );
-            }
-        });
-
-        session()->flash('message', $this->matricula_id ? 'Matrícula actualizada.' : 'Matrícula registrada exitosamente.');
-        $this->closeModal();
+            session()->flash('message', $this->matricula_id ? 'Matrícula actualizada.' : 'Matrícula exitosa.');
+            $this->closeModal();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error: ' . $e->getMessage());
+        }
     }
 
-    // --- NUEVA LÓGICA DE ELIMINACIÓN CON MODAL ---
+    // --- ELIMINACIÓN ---
 
     public function confirmDelete($id)
     {
         $this->matriculaIdBeingDeleted = $id;
     }
 
-    public function cancelDelete()
-    {
-        $this->matriculaIdBeingDeleted = null;
-    }
-
     public function delete()
     {
         if ($this->matriculaIdBeingDeleted) {
-            $matricula = MatriculaModel::findOrFail($this->matriculaIdBeingDeleted);
+            $matricula = MatriculaModel::with('pagos')->findOrFail($this->matriculaIdBeingDeleted);
             
-            // Eliminar archivos físicos
+            // Borrar imágenes de vouchers del storage
             foreach($matricula->pagos as $pago) {
                 if($pago->evidencia) Storage::disk('public')->delete($pago->evidencia);
             }
             
-            // Eliminar registros
-            $matricula->pagos()->delete();
-            $matricula->delete();
-
-            session()->flash('message', 'Matrícula eliminada.');
+            $matricula->delete(); // OnDelete Cascade debería limpiar pagos_matriculas
+            
+            session()->flash('message', 'Matrícula y registros de pago eliminados.');
             $this->matriculaIdBeingDeleted = null;
         }
+    }
+
+    // --- UTILIDADES ---
+
+    public function show($id)
+    {
+        $this->viewingMatricula = MatriculaModel::with(['alumno.user', 'ciclo.area', 'carrera', 'pagos'])->findOrFail($id);
+        $this->view = 'show';
     }
 
     public function closeModal()
@@ -254,16 +248,9 @@ class Matricula extends Component
     private function resetInputFields()
     {
         $this->reset([
-            'matricula_id', 
-            'search', 
-            'alumno_id', 
-            'nombre_alumno', 
-            'monto_total', 
-            'modalidad', 
-            'estado', 
-            'cuotas', 
-            'viewingMatricula',
-            'matriculaIdBeingDeleted' // También se resetea aquí
+            'matricula_id', 'search', 'alumno_id', 'nombre_alumno', 
+            'area_id', 'ciclo_id', 'carrera_id', 'monto_total', 
+            'modalidad', 'estado', 'cuotas', 'viewingMatricula'
         ]);
         $this->resetValidation();
     }

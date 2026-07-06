@@ -29,7 +29,7 @@
             </ol>
         </nav>
 
-        <!-- 2. MENSAJES DE ÉXITO -->
+        <!-- 2. MENSAJES DE ESTADO -->
         @if (session()->has('message'))
             <div x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)"
                  class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl flex justify-between items-center transition-all animate-fade-in-down">
@@ -68,7 +68,7 @@
                             <thead class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b border-gray-100">
                                 <tr>
                                     <th class="px-6 py-4">Alumno</th>
-                                    <th class="px-6 py-4">Ciclo</th>
+                                    <th class="px-6 py-4">Ciclo / Carrera</th>
                                     <th class="px-6 py-4 text-center">Modalidad</th>
                                     <th class="px-6 py-4">Monto Total</th>
                                     <th class="px-6 py-4 text-center">Estado</th>
@@ -89,7 +89,10 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 font-semibold text-gray-600 text-xs">{{ $m->ciclo->nombre ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-xs font-semibold text-gray-600">{{ $m->ciclo->nombre ?? 'N/A' }}</div>
+                                            <div class="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">{{ $m->carrera->nombre ?? 'Sin Carrera' }}</div>
+                                        </td>
                                         <td class="px-6 py-4 text-center">
                                             <span class="px-3 py-1 text-[10px] font-black uppercase rounded-lg bg-blue-50 text-blue-600 border border-blue-100 italic">{{ $m->modalidad }}</span>
                                         </td>
@@ -107,7 +110,6 @@
                                                 <button wire:click="edit({{ $m->id }})" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </button>
-                                                <!-- ACTUALIZADO: Sin mensaje de consola nativo -->
                                                 <button wire:click="confirmDelete({{ $m->id }})" class="p-2 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
@@ -116,12 +118,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-6 py-12 text-center">
-                                            <div class="flex flex-col items-center">
-                                                <svg class="w-12 h-12 text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                <p class="text-gray-400 font-medium italic text-sm">No se encontraron matrículas registradas.</p>
-                                            </div>
-                                        </td>
+                                        <td colspan="6" class="px-6 py-12 text-center text-gray-400 italic text-sm">No se encontraron matrículas registradas.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -145,13 +142,13 @@
                                     <div class="relative group">
                                         <input type="text" wire:model.live="search" placeholder="Escriba Nombre o DNI del alumno..." 
                                                class="w-full p-4 bg-white border-2 border-gray-50 rounded-2xl shadow-sm focus:border-indigo-500 transition-all outline-none">
-                                        @if(count($resultados) > 0)
+                                        @if(count($alumnos_busqueda) > 0)
                                             <ul class="absolute z-50 mt-2 w-full bg-white shadow-2xl rounded-2xl border border-gray-100 py-3 max-h-64 overflow-y-auto custom-scrollbar">
-                                                @foreach($resultados as $alumno)
+                                                @foreach($alumnos_busqueda as $alumno)
                                                     <li wire:click="selectAlumno({{ $alumno->user_id }})" class="px-5 py-3 hover:bg-indigo-50 cursor-pointer transition flex items-center justify-between group/item">
                                                         <div>
                                                             <div class="font-bold text-gray-800 group-hover/item:text-indigo-700">{{ $alumno->user->name }}</div>
-                                                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">DNI: {{ $alumno->dni }} • {{ $alumno->carrera->nombre ?? 'S/C' }}</div>
+                                                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">DNI: {{ $alumno->dni }}</div>
                                                         </div>
                                                         <svg class="w-4 h-4 text-indigo-400 opacity-0 group-hover/item:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                                     </li>
@@ -167,7 +164,7 @@
                                             </div>
                                             <div>
                                                 <div class="font-black text-lg leading-tight">{{ $nombre_alumno }}</div>
-                                                <div class="text-[10px] font-bold uppercase tracking-widest opacity-80">ID Referencia: {{ $alumno_id }}</div>
+                                                <div class="text-[10px] font-bold uppercase tracking-widest opacity-80">Alumno Seleccionado</div>
                                             </div>
                                         </div>
                                         <button type="button" wire:click="$set('alumno_id', null)" class="p-2 hover:bg-white/10 rounded-xl transition group" title="Cambiar Alumno">
@@ -179,41 +176,81 @@
                             </div>
                         </div>
 
-                        <!-- 2. CONFIGURACIÓN -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div class="space-y-2">
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Monto Total Carrera</label>
-                                <div class="relative group">
-                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">S/</span>
-                                    <input type="number" step="0.01" wire:model.live="monto_total" class="w-full pl-10 p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700">
+                        <!-- 2. CONFIGURACIÓN ACADÉMICA -->
+                        <div class="space-y-6">
+                            <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center">
+                                <span class="bg-indigo-500 w-2 h-2 rounded-full mr-2"></span> 2. Ubicación Académica
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Área de Estudios</label>
+                                    <select wire:model.live="area_id" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer">
+                                        <option value="">Seleccione Área...</option>
+                                        @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
+                                    </select>
+                                    @error('area_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
                                 </div>
-                                @error('monto_total') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
-                            </div>
 
-                            <div class="space-y-2">
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Plan de Pagos</label>
-                                <select wire:model.live="modalidad" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer">
-                                    <option value="Pago Unico">Pago Único (1 Cuota)</option>
-                                    <option value="2 Cuotas">Dividido en 2 Cuotas</option>
-                                    <option value="3 Cuotas">Dividido en 3 Cuotas</option>
-                                </select>
-                            </div>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Ciclo Académico</label>
+                                    <select wire:model="ciclo_id" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer disabled:opacity-50" {{ !$area_id ? 'disabled' : '' }}>
+                                        <option value="">Seleccione Ciclo...</option>
+                                        @foreach($ciclos as $ciclo) <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option> @endforeach
+                                    </select>
+                                    @error('ciclo_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                </div>
 
-                            <div class="space-y-2">
-                                <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Estado Administrativo</label>
-                                <select wire:model="estado" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer">
-                                    <option value="Pendiente">Pendiente</option>
-                                    <option value="Activa">Activa / Regular</option>
-                                    <option value="Anulada">Anulada</option>
-                                </select>
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Carrera Destino</label>
+                                    <select wire:model="carrera_id" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer disabled:opacity-50" {{ !$area_id ? 'disabled' : '' }}>
+                                        <option value="">Seleccione Carrera...</option>
+                                        @foreach($carreras as $carrera) <option value="{{ $carrera->id }}">{{ $carrera->nombre }}</option> @endforeach
+                                    </select>
+                                    @error('carrera_id') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <!-- 3. CRONOGRAMA -->
+                        <!-- 3. CONFIGURACIÓN FINANCIERA -->
+                        <div class="space-y-6">
+                            <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4 flex items-center">
+                                <span class="bg-indigo-500 w-2 h-2 rounded-full mr-2"></span> 3. Plan de Inversión
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Monto Total</label>
+                                    <div class="relative group">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">S/</span>
+                                        <input type="number" step="0.01" wire:model.live="monto_total" class="w-full pl-10 p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700">
+                                    </div>
+                                    @error('monto_total') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Modalidad de Pago</label>
+                                    <select wire:model.live="modalidad" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer">
+                                        <option value="Pago Unico">Pago Único (1 Cuota)</option>
+                                        <option value="2 Cuotas">Dividido en 2 Cuotas</option>
+                                        <option value="3 Cuotas">Dividido en 3 Cuotas</option>
+                                    </select>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Estado</label>
+                                    <select wire:model="estado" class="w-full p-3.5 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-bold text-gray-700 cursor-pointer">
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="Activa">Activa / Regular</option>
+                                        <option value="Anulada">Anulada</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. CRONOGRAMA -->
                         <div class="space-y-6">
                             <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                Desglose de Pagos y Vouchers
+                                Desglose de Cuotas y Vouchers
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 @foreach($cuotas as $index => $cuota)
@@ -230,7 +267,7 @@
                                             <input type="date" wire:model="cuotas.{{ $index }}.fecha_vencimiento" class="mt-1 w-full p-2.5 bg-gray-50 border-gray-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all">
                                         </div>
                                         <div class="pt-2 border-t border-gray-50">
-                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter block mb-2">Comprobante de Pago</label>
+                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter block mb-2">Comprobante (Imagen)</label>
                                             @if(isset($cuota['existente_evidencia']) && $cuota['existente_evidencia'])
                                                 <a href="{{ Storage::url($cuota['existente_evidencia']) }}" target="_blank" class="inline-flex items-center text-[10px] font-black text-indigo-600 hover:text-indigo-800 mb-3 bg-indigo-50 px-2 py-1 rounded-md transition-colors uppercase tracking-widest">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -238,6 +275,7 @@
                                                 </a>
                                             @endif
                                             <input type="file" wire:model="cuotas.{{ $index }}.evidencia" class="block w-full text-[9px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 cursor-pointer">
+                                            @error("cuotas.$index.evidencia") <p class="text-red-500 text-[9px] font-bold uppercase mt-1">{{ $message }}</p> @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -249,7 +287,7 @@
                         <div class="flex flex-col sm:flex-row justify-end gap-4 mt-12 pt-10 border-t border-gray-100">
                             <button type="button" wire:click="closeModal" class="px-8 py-3.5 text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">Cancelar</button>
                             <button type="submit" class="px-10 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95 flex items-center justify-center">
-                                {{ $view == 'create' ? 'Confirmar Registro' : 'Actualizar Matrícula' }}
+                                {{ $view == 'create' ? 'Procesar Matrícula' : 'Guardar Cambios' }}
                             </button>
                         </div>
                     </form>
@@ -268,22 +306,23 @@
                                 
                                 <div class="mt-8 pt-8 border-t border-white/10">
                                     <p class="text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em] mb-2">Información Académica</p>
-                                    <p class="text-sm font-bold">{{ $viewingMatricula->ciclo->nombre ?? 'Sin Ciclo' }}</p>
-                                    <p class="text-[11px] text-indigo-100 italic mt-1">{{ $viewingMatricula->alumno->carrera->nombre ?? 'Sin Carrera' }}</p>
+                                    <p class="text-sm font-bold">{{ $viewingMatricula->ciclo->nombre ?? 'N/A' }}</p>
+                                    <p class="text-[11px] text-indigo-100 italic mt-1">{{ $viewingMatricula->carrera->nombre ?? 'Sin Carrera' }}</p>
+                                    <p class="text-[11px] text-indigo-100 opacity-60 uppercase font-black mt-2 tracking-widest">{{ $viewingMatricula->ciclo->area->nombre ?? 'S/A' }}</p>
                                 </div>
                             </div>
                             
                             <div class="bg-white rounded-3xl p-8 border-2 border-gray-50 shadow-sm">
                                 <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center">
-                                    <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></span> Resumen Financiero
+                                    <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></span> Estado Financiero
                                 </h4>
                                 <div class="space-y-5">
                                     <div class="flex justify-between items-end border-b border-gray-50 pb-3">
-                                        <span class="text-xs font-bold text-gray-400">Inversión Total:</span>
+                                        <span class="text-xs font-bold text-gray-400">Costo Total:</span>
                                         <span class="text-lg font-black text-gray-800 font-mono">S/ {{ number_format($viewingMatricula->monto_total, 2) }}</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-xs font-bold text-gray-400">Estado:</span>
+                                        <span class="text-xs font-bold text-gray-400">Situación:</span>
                                         <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight {{ $viewingMatricula->estado == 'Activa' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
                                             {{ $viewingMatricula->estado }}
                                         </span>
@@ -295,7 +334,7 @@
                         <div class="lg:col-span-2 space-y-6">
                             <h3 class="text-xl font-black text-gray-800 tracking-tight flex items-center">
                                 <svg class="w-6 h-6 mr-3 text-indigo-600 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                Desglose de Pagos (Timeline)
+                                Cronograma de Pagos
                             </h3>
                             <div class="grid grid-cols-1 gap-5">
                                 @foreach($viewingMatricula->pagos as $pago)
@@ -310,7 +349,12 @@
                                             <p class="text-[11px] text-gray-400 font-bold flex items-center mt-1 uppercase tracking-tighter">Vence: {{ \Carbon\Carbon::parse($pago->fecha_vencimiento)->format('d/m/Y') }}</p>
                                         </div>
                                     </div>
-                                    <div class="text-right">
+                                    <div class="flex items-center gap-4">
+                                        @if($pago->evidencia)
+                                        <a href="{{ Storage::url($pago->evidencia) }}" target="_blank" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors" title="Ver Comprobante">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                        </a>
+                                        @endif
                                         <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border-2 {{ $pago->estado == 'Pagado' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500' }}">
                                             {{ $pago->estado }}
                                         </span>
@@ -326,13 +370,10 @@
         </div>
     </div>
 
-    <!-- MODAL DE ELIMINACIÓN CORREGIDO -->
+    <!-- MODAL DE ELIMINACIÓN -->
     @if($matriculaIdBeingDeleted)
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <!-- Backdrop -->
         <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
-
-        <!-- Caja del Modal -->
         <div class="relative bg-white rounded-[2rem] max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
             <div class="p-8">
                 <div class="flex items-start">
@@ -344,14 +385,14 @@
                     <div class="ml-6">
                         <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Eliminar Matrícula?</h3>
                         <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
-                            Esta acción eliminará permanentemente el registro de matrícula y todos sus comprobantes de pago asociados del sistema. Esta operación no se puede deshacer.
+                            Se eliminará el registro académico y sus comprobantes de pago. Esta operación es irreversible.
                         </p>
                     </div>
                 </div>
             </div>
             <div class="bg-gray-50 px-8 py-4 flex flex-col sm:flex-row-reverse gap-3 mt-2">
                 <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 shadow-lg shadow-red-100 transition-all active:scale-95">
-                    Eliminar Permanentemente
+                    Eliminar Registro
                 </button>
                 <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
                     Descartar
