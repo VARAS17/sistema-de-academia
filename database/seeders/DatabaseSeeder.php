@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             AreaSeeder::class,
             CicloSeeder::class,
             CarreraSeeder::class,
+            CursosSeeder::class,
         ]);
     }
 }
