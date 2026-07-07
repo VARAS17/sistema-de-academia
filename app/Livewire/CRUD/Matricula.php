@@ -115,7 +115,7 @@ class Matricula extends Component
                     ->orWhere('dni', 'like', "%{$this->search}%")
                     ->take(5)->get() 
                 : [],
-            'matriculas' => MatriculaModel::with(['alumno.user', 'ciclo', 'pagos'])
+            'matriculas' => MatriculaModel::with(['alumno.user', 'ciclo', 'carrera', 'pagos'])
                 ->orderByDesc('created_at')->paginate(10),
             'areas'    => Area::orderBy('nombre')->get(),
             'ciclos'   => $this->area_id ? Ciclo::where('area_id', $this->area_id)->get() : collect(),
@@ -135,7 +135,7 @@ class Matricula extends Component
     public function edit($id)
     {
         $this->resetInputFields();
-        $matricula = MatriculaModel::with(['alumno.user', 'pagos', 'ciclo'])->findOrFail($id);
+        $matricula = MatriculaModel::with(['alumno.user', 'pagos', 'ciclo', 'carrera'])->findOrFail($id);
         
         $this->matricula_id  = $matricula->id;
         $this->alumno_id     = $matricula->alumno_id;

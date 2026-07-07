@@ -402,4 +402,29 @@
     </div>
     @endif
 
+
+    <!-- 2. MENSAJES DE ESTADO -->
+@if (session()->has('message'))
+    <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl">
+        {{ session('message') }}
+    </div>
+@endif
+
+@if (session()->has('error'))
+    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-800 shadow-sm rounded-r-xl">
+        {{ session('error') }}
+    </div>
+@endif
+
+<!-- Útil para debug: Muestra si hay fallos de validación que no ves -->
+@if ($errors->any())
+    <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 text-orange-800 shadow-sm rounded-r-xl">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 </div>

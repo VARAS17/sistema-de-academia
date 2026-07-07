@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-#[Fillable(['alumno_id', 'ciclo_id', 'monto_total', 'modalidad', 'estado'])]
+#[Fillable(['alumno_id', 'ciclo_id', 'carrera_id', 'monto_total', 'modalidad', 'estado'])]
 class Matricula extends Model
 {
     use HasFactory;
@@ -35,5 +35,10 @@ class Matricula extends Model
     public function pagos(): HasMany
     {
         return $this->hasMany(PagoMatricula::class, 'matricula_id');
+    }
+
+    public function carrera()
+    {
+        return $this->belongsTo(Carrera::class, 'carrera_id');
     }
 }

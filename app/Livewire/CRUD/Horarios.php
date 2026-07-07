@@ -36,14 +36,19 @@ class Horarios extends Component
         $user = Auth::user();
 
         if (!$user->hasRole('admin')) {
-            $perfil = $user->alumno; 
-            if ($perfil && $perfil->carrera) {
-                $this->filtro_area = $perfil->carrera->area_id; 
-                $this->filtro_ciclo = $perfil->ciclo_id;
+            // BUSCAR MATRÍCULA ACTIVA PARA SACAR AREA Y CICLO
+            $matricula = \App\Models\Matricula::where('alumno_id', $user->id)
+                            ->where('estado', 'Activa')
+                            ->latest()
+                            ->first();
+
+            if ($matricula) {
+                // Sacamos el área a través del ciclo de la matrícula
+                $this->filtro_area = $matricula->ciclo->area_id; 
+                $this->filtro_ciclo = $matricula->ciclo_id;
             }
         }
     }
-
     public function updatedAreaId($value)
     {
         $this->ciclos = Ciclo::where('area_id', $value)->get();
@@ -186,11 +191,17 @@ class Horarios extends Component
             if ($this->filtro_area) $query->where('area_id', $this->filtro_area);
             if ($this->filtro_ciclo) $query->where('ciclo_id', $this->filtro_ciclo);
         } else {
-            $perfil = $user->alumno;
-            if ($perfil && $perfil->carrera && $perfil->ciclo_id) {
-                $query->where('area_id', $perfil->carrera->area_id)
-                      ->where('ciclo_id', $perfil->ciclo_id);
+            // LÓGICA PARA EL ALUMNO USANDO MATRÍCULA
+            $matricula = \App\Models\Matricula::where('alumno_id', $user->id)
+                            ->where('estado', 'Activa')
+                            ->latest()
+                            ->first();
+
+            if ($matricula) {
+                $query->where('area_id', $matricula->ciclo->area_id)
+                    ->where('ciclo_id', $matricula->ciclo_id);
             } else {
+                // Si no tiene matrícula activa, no ve ningún horario
                 $query->whereRaw('1 = 0');
             }
         }

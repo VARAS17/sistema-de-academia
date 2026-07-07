@@ -6,6 +6,7 @@ use App\Models\Area;
 use App\Models\Simulacro;
 use App\Models\Alumno;
 use App\Models\ResultadoSimulacro;
+use App\Models\Matricula; // Asegúrate de que este modelo exista
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -52,10 +53,14 @@ class Puntajesimulacro extends Component
     {
         if (!$this->simulacro_id) return;
 
-        $simulacro = Simulacro::find($this->simulacro_id);
+        $simulacro = Simulacro::findOrFail($this->simulacro_id);
         
+        // CORRECCIÓN: Buscamos alumnos que tengan matrícula ACTIVA en el ciclo del simulacro
         $alumnos = Alumno::with('user')
-            ->where('ciclo_id', $simulacro->ciclo_id)
+            ->whereHas('matriculas', function($q) use ($simulacro) {
+                $q->where('ciclo_id', $simulacro->ciclo_id)
+                  ->where('estado', 'Activa');
+            })
             ->get();
 
         $this->resultados = [];
@@ -89,7 +94,7 @@ class Puntajesimulacro extends Component
         $c = $this->resultados[$alumno_id]['correctas'];
         $i = $this->resultados[$alumno_id]['incorrectas'];
         
-        // Fórmula ejemplo
+        // Fórmula de puntaje (puedes ajustarla)
         $this->resultados[$alumno_id]['puntaje'] = ($c * 4.025) - ($i * 0.975);
     }
 
@@ -99,22 +104,26 @@ class Puntajesimulacro extends Component
 
         $this->validate();
 
-        DB::transaction(function () {
-            foreach ($this->resultados as $alumno_id => $data) {
-                ResultadoSimulacro::updateOrCreate(
-                    ['simulacro_id' => $this->simulacro_id, 'alumno_id' => $alumno_id],
-                    [
-                        'correctas' => $data['correctas'],
-                        'incorrectas' => $data['incorrectas'],
-                        'blanco' => $data['blanco'],
-                        'puntaje' => $data['puntaje'],
-                    ]
-                );
-            }
-            $this->recalcularRanking();
-        });
+        try {
+            DB::transaction(function () {
+                foreach ($this->resultados as $alumno_id => $data) {
+                    ResultadoSimulacro::updateOrCreate(
+                        ['simulacro_id' => $this->simulacro_id, 'alumno_id' => $alumno_id],
+                        [
+                            'correctas' => $data['correctas'],
+                            'incorrectas' => $data['incorrectas'],
+                            'blanco' => $data['blanco'],
+                            'puntaje' => $data['puntaje'],
+                        ]
+                    );
+                }
+                $this->recalcularRanking();
+            });
 
-        session()->flash('message', 'Notas procesadas correctamente.');
+            session()->flash('message', 'Notas procesadas y ranking actualizado.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al guardar: ' . $e->getMessage());
+        }
     }
 
     private function recalcularRanking()
@@ -132,7 +141,9 @@ class Puntajesimulacro extends Component
     {
         return view('livewire.c-r-u-d.puntajesimulacro', [
             'areas' => Area::all(),
-            'simulacros' => Simulacro::where('area_id', $this->area_id)->get()
+            'simulacros' => $this->area_id 
+                ? Simulacro::where('area_id', $this->area_id)->get() 
+                : collect()
         ]);
     }
 }
