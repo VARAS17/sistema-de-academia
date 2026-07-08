@@ -6,7 +6,7 @@
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium hover:text-indigo-600 transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 00-1.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                         Inicio
                     </a>
                 </li>
@@ -38,6 +38,12 @@
                     <span class="font-bold text-sm">{{ session('message') }}</span>
                 </div>
                 <button @click="show = false" class="text-emerald-400 hover:text-emerald-600 transition-colors">&times;</button>
+            </div>
+        @endif
+
+        @if (session()->has('error'))
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-800 shadow-sm rounded-r-xl">
+                {{ session('error') }}
             </div>
         @endif
 
@@ -250,7 +256,7 @@
                         <div class="space-y-6">
                             <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                Desglose de Cuotas y Vouchers
+                                Desglose de Cuotas Generadas
                             </h3>
                             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 @foreach($cuotas as $index => $cuota)
@@ -265,17 +271,6 @@
                                         <div>
                                             <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Vencimiento</label>
                                             <input type="date" wire:model="cuotas.{{ $index }}.fecha_vencimiento" class="mt-1 w-full p-2.5 bg-gray-50 border-gray-100 rounded-xl text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-indigo-100 transition-all">
-                                        </div>
-                                        <div class="pt-2 border-t border-gray-50">
-                                            <label class="text-[10px] font-black text-gray-400 uppercase tracking-tighter block mb-2">Comprobante (Imagen)</label>
-                                            @if(isset($cuota['existente_evidencia']) && $cuota['existente_evidencia'])
-                                                <a href="{{ Storage::url($cuota['existente_evidencia']) }}" target="_blank" class="inline-flex items-center text-[10px] font-black text-indigo-600 hover:text-indigo-800 mb-3 bg-indigo-50 px-2 py-1 rounded-md transition-colors uppercase tracking-widest">
-                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                                    Ver Voucher
-                                                </a>
-                                            @endif
-                                            <input type="file" wire:model="cuotas.{{ $index }}.evidencia" class="block w-full text-[9px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 cursor-pointer">
-                                            @error("cuotas.$index.evidencia") <p class="text-red-500 text-[9px] font-bold uppercase mt-1">{{ $message }}</p> @enderror
                                         </div>
                                     </div>
                                 </div>
@@ -350,11 +345,6 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-4">
-                                        @if($pago->evidencia)
-                                        <a href="{{ Storage::url($pago->evidencia) }}" target="_blank" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-colors" title="Ver Comprobante">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                        </a>
-                                        @endif
                                         <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border-2 {{ $pago->estado == 'Pagado' ? 'bg-green-50 border-green-100 text-green-600' : 'bg-red-50 border-red-100 text-red-500' }}">
                                             {{ $pago->estado }}
                                         </span>
@@ -373,7 +363,7 @@
     <!-- MODAL DE ELIMINACIÓN -->
     @if($matriculaIdBeingDeleted)
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="$set('matriculaIdBeingDeleted', null)"></div>
         <div class="relative bg-white rounded-[2rem] max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
             <div class="p-8">
                 <div class="flex items-start">
@@ -385,7 +375,7 @@
                     <div class="ml-6">
                         <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Eliminar Matrícula?</h3>
                         <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
-                            Se eliminará el registro académico y sus comprobantes de pago. Esta operación es irreversible.
+                            Se eliminará el registro académico y el cronograma de pagos asociado. Esta operación es irreversible.
                         </p>
                     </div>
                 </div>
@@ -394,7 +384,7 @@
                 <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 shadow-lg shadow-red-100 transition-all active:scale-95">
                     Eliminar Registro
                 </button>
-                <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                <button wire:click="$set('matriculaIdBeingDeleted', null)" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
                     Descartar
                 </button>
             </div>
@@ -402,29 +392,18 @@
     </div>
     @endif
 
-
-    <!-- 2. MENSAJES DE ESTADO -->
-@if (session()->has('message'))
-    <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl">
-        {{ session('message') }}
-    </div>
-@endif
-
-@if (session()->has('error'))
-    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-800 shadow-sm rounded-r-xl">
-        {{ session('error') }}
-    </div>
-@endif
-
-<!-- Útil para debug: Muestra si hay fallos de validación que no ves -->
-@if ($errors->any())
-    <div class="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 text-orange-800 shadow-sm rounded-r-xl">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+    <!-- Útil para debug: Muestra si hay fallos de validación que no ves -->
+    @if ($errors->any())
+        <div class="fixed bottom-4 right-4 z-50 max-w-xs animate-fade-in">
+            <div class="p-4 bg-orange-50 border-l-4 border-orange-500 text-orange-800 shadow-xl rounded-r-xl">
+                <p class="font-black text-[10px] uppercase tracking-widest mb-2">Errores de Validación:</p>
+                <ul class="text-xs space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>• {{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
 
 </div>

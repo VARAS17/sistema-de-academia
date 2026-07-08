@@ -9,15 +9,12 @@ use App\Models\Area;
 use App\Models\Matricula as MatriculaModel;
 use App\Models\PagoMatricula;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class Matricula extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination; // Eliminado WithFileUploads
 
     // Propiedades de navegación y búsqueda
     public string $view = 'index'; 
@@ -26,7 +23,7 @@ class Matricula extends Component
     public $matriculaIdBeingDeleted = null;
 
     // Propiedades del Alumno Seleccionado
-    public $alumno_id; // PK de la tabla alumnos (user_id)
+    public $alumno_id;
     public $nombre_alumno;
 
     // Propiedades del Formulario de Matrícula
@@ -51,7 +48,6 @@ class Matricula extends Component
             'estado'      => 'required|in:Pendiente,Activa,Anulada',
             'cuotas.*.monto'             => 'required|numeric',
             'cuotas.*.fecha_vencimiento' => 'required|date',
-            'cuotas.1.evidencia'         => $this->view === 'create' ? 'required|image|max:2048' : 'nullable',
         ];
     }
 
@@ -98,8 +94,6 @@ class Matricula extends Component
             $this->cuotas[$i] = [
                 'monto' => $montoIndividual > 0 ? $montoIndividual : '',
                 'fecha_vencimiento' => now()->addMonths($i-1)->format('Y-m-d'),
-                'evidencia' => null,
-                'existente_evidencia' => null,
             ];
         }
     }
@@ -153,8 +147,6 @@ class Matricula extends Component
                 'id' => $pago->id,
                 'monto' => $pago->monto,
                 'fecha_vencimiento' => $pago->fecha_vencimiento,
-                'evidencia' => null,
-                'existente_evidencia' => $pago->evidencia,
             ];
         }
         $this->view = 'edit';
@@ -166,7 +158,7 @@ class Matricula extends Component
 
         try {
             DB::transaction(function () {
-                // 1. Crear o Actualizar la Matrícula (Cabecera)
+                // 1. Crear o Actualizar la Matrícula
                 $matricula = MatriculaModel::updateOrCreate(
                     ['id' => $this->matricula_id],
                     [
@@ -179,23 +171,15 @@ class Matricula extends Component
                     ]
                 );
 
-                // 2. Gestionar los Pagos (Detalle)
+                // 2. Gestionar los Pagos (Solo creación de la deuda)
                 foreach ($this->cuotas as $numero => $data) {
-                    $pagoData = [
-                        'monto' => $data['monto'],
-                        'fecha_vencimiento' => $data['fecha_vencimiento'],
-                    ];
-
-                    // Subida de Voucher si existe
-                    if (isset($data['evidencia']) && $data['evidencia']) {
-                        $pagoData['evidencia'] = $data['evidencia']->store('vouchers', 'public');
-                        $pagoData['fecha_pago'] = now();
-                        $pagoData['estado'] = 'Pagado';
-                    }
-
                     PagoMatricula::updateOrCreate(
                         ['matricula_id' => $matricula->id, 'numero_cuota' => $numero],
-                        $pagoData
+                        [
+                            'monto' => $data['monto'],
+                            'fecha_vencimiento' => $data['fecha_vencimiento'],
+                            // El estado por defecto debería ser 'Pendiente' en la base de datos
+                        ]
                     );
                 }
             });
@@ -207,8 +191,6 @@ class Matricula extends Component
         }
     }
 
-    // --- ELIMINACIÓN ---
-
     public function confirmDelete($id)
     {
         $this->matriculaIdBeingDeleted = $id;
@@ -217,21 +199,13 @@ class Matricula extends Component
     public function delete()
     {
         if ($this->matriculaIdBeingDeleted) {
-            $matricula = MatriculaModel::with('pagos')->findOrFail($this->matriculaIdBeingDeleted);
-            
-            // Borrar imágenes de vouchers del storage
-            foreach($matricula->pagos as $pago) {
-                if($pago->evidencia) Storage::disk('public')->delete($pago->evidencia);
-            }
-            
-            $matricula->delete(); // OnDelete Cascade debería limpiar pagos_matriculas
-            
-            session()->flash('message', 'Matrícula y registros de pago eliminados.');
+            $matricula = MatriculaModel::findOrFail($this->matriculaIdBeingDeleted);
+            // Ya no se eliminan archivos de storage porque no se suben aquí
+            $matricula->delete(); 
+            session()->flash('message', 'Matrícula eliminada.');
             $this->matriculaIdBeingDeleted = null;
         }
     }
-
-    // --- UTILIDADES ---
 
     public function show($id)
     {
