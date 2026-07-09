@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Alumno extends Model
 {
-    protected $primaryKey = 'user_id';
+    protected $primaryKey = 'user_id'; // Tu llave primaria personalizada
     public $incrementing = false;
     protected $keyType = 'int';
 
@@ -19,6 +19,14 @@ class Alumno extends Model
         'ciclo_id', 
         'carrera_id'
     ];
+
+    // --- RELACIÓN FALTANTE ---
+    public function matriculas(): HasMany 
+    {
+        // 'alumno_id' es la FK en la tabla matriculas
+        // 'user_id' es la local key en la tabla alumnos
+        return $this->hasMany(Matricula::class, 'alumno_id', 'user_id');
+    }
 
     public function user(): BelongsTo { 
         return $this->belongsTo(User::class, 'user_id'); 
@@ -32,9 +40,6 @@ class Alumno extends Model
         return $this->belongsTo(Carrera::class); 
     }
 
-    /**
-     * Relación para obtener los cursos del ciclo actual del alumno
-     */
     public function cursos(): HasMany {
         return $this->hasMany(Curso::class, 'ciclo_id', 'ciclo_id');
     }

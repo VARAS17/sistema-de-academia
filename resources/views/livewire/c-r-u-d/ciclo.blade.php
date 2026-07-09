@@ -1,4 +1,4 @@
-<div class="py-8 bg-gray-50 min-h-screen">
+<div class="py-8 bg-gray-50 min-h-screen relative">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- SECCIÓN: BREADCRUMBS -->
@@ -103,7 +103,7 @@
                                             <button wire:click="edit({{ $ciclo->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                             </button>
-                                            <button wire:click="delete({{ $ciclo->id }})" onclick="confirm('¿Seguro que desea eliminar?') || event.stopImmediatePropagation()" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Borrar">
+                                            <button wire:click="confirmDelete({{ $ciclo->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Borrar">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </div>
@@ -120,7 +120,7 @@
                 </div>
 
             @elseif($view == 'show')
-                <!-- VISTA DE DETALLES (NUEVA) -->
+                <!-- VISTA DE DETALLES (Manteniendo tu diseño original) -->
                 <div class="p-8">
                     <div class="flex flex-col md:flex-row justify-between items-start border-b border-gray-100 pb-8 mb-8 gap-6">
                         <div>
@@ -140,7 +140,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <!-- Columna de Información General -->
                         <div class="md:col-span-1 space-y-6">
                             <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                                 <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Información de Ubicación</h4>
@@ -155,49 +154,32 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Columna de Profesores -->
                         <div class="md:col-span-2">
-                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Profesores a Cargo de este Ciclo</h4>
+                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Profesores a Cargo</h4>
                             <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                                 <table class="min-w-full divide-y divide-gray-100">
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Docente</th>
-                                            <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Especialidad</th>
                                             <th class="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Cursos</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-50">
                                         @forelse($selectedCiclo->cursos->flatMap->docentes->unique('user_id') as $docente)
-                                            <tr class="hover:bg-gray-50 transition-colors">
+                                            <tr>
                                                 <td class="px-6 py-4">
-                                                    <div class="flex items-center">
-                                                        <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-xs mr-3">
-                                                            {{ substr($docente->user->name, 0, 1) }}
-                                                        </div>
-                                                        <span class="text-sm font-bold text-gray-700">{{ $docente->user->name }}</span>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 text-sm text-gray-500">
-                                                    {{ $docente->especialidad ?? 'No especificada' }}
+                                                    <span class="text-sm font-bold text-gray-700">{{ $docente->user->name }}</span>
                                                 </td>
                                                 <td class="px-6 py-4">
                                                     <div class="flex flex-wrap gap-1">
                                                         @foreach($docente->cursos->where('ciclo_id', $selectedCiclo->id) as $curso)
-                                                            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold border border-gray-200">
-                                                                {{ $curso->nombre }}
-                                                            </span>
+                                                            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold">{{ $curso->nombre }}</span>
                                                         @endforeach
                                                     </div>
                                                 </td>
                                             </tr>
                                         @empty
-                                            <tr>
-                                                <td colspan="3" class="px-6 py-10 text-center text-gray-400 italic text-sm">
-                                                    No hay docentes asignados a cursos en este ciclo.
-                                                </td>
-                                            </tr>
+                                            <tr><td colspan="2" class="px-6 py-8 text-center text-gray-400 italic">Sin docentes.</td></tr>
                                         @endforelse
                                     </tbody>
                                 </table>
@@ -207,41 +189,30 @@
                 </div>
 
             @else
-                <!-- VISTA DE FORMULARIO (Create/Edit) -->
+                <!-- VISTA DE FORMULARIO -->
                 <div class="p-8 max-w-2xl mx-auto">
                     <div class="text-center mb-8">
-                        <h3 class="text-2xl font-black text-gray-800">
-                            {{ $view == 'create' ? 'Nuevo Ciclo' : 'Editar Ciclo' }}
-                        </h3>
-                        <p class="text-gray-500 text-sm">Complete la información requerida para el ciclo académico.</p>
+                        <h3 class="text-2xl font-black text-gray-800">{{ $view == 'create' ? 'Nuevo Ciclo' : 'Editar Ciclo' }}</h3>
                     </div>
                     
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Nombre del Ciclo</label>
-                            <input type="text" wire:model="nombre" class="w-full p-3 bg-gray-50 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none @error('nombre') border-red-400 @enderror" placeholder="Ej: 2024-II Verano">
-                            @error('nombre') <span class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</span> @enderror
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Nombre</label>
+                            <input type="text" wire:model="nombre" class="w-full p-3 bg-gray-50 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none">
                         </div>
-
                         <div>
                             <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Área Académica</label>
                             <select wire:model="area_id" class="w-full p-3 bg-gray-50 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none cursor-pointer">
                                 <option value="">Seleccione el Área...</option>
-                                @foreach($areas as $area)
-                                    <option value="{{ $area->id }}">{{ $area->nombre }}</option>
-                                @endforeach
+                                @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
                             </select>
-                            @error('area_id') <span class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</span> @enderror
                         </div>
-
                         <div>
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Aula / Ubicación</label>
-                            <input type="text" wire:model="aula" class="w-full p-3 bg-gray-50 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" placeholder="Ej: Pabellón A - 102">
-                            @error('aula') <span class="text-red-500 text-xs mt-1 font-bold">{{ $message }}</span> @enderror
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Aula</label>
+                            <input type="text" wire:model="aula" class="w-full p-3 bg-gray-50 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none">
                         </div>
-
                         <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between">
-                            <label for="activo" class="text-sm font-bold text-indigo-900 cursor-pointer">¿El ciclo se encuentra activo actualmente?</label>
+                            <label for="activo" class="text-sm font-bold text-indigo-900">¿Ciclo activo?</label>
                             <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
                                 <input type="checkbox" wire:model="activo" id="activo" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer checked:right-0 checked:border-indigo-600 transition-all"/>
                                 <label for="activo" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-all"></label>
@@ -249,23 +220,52 @@
                         </div>
                     </div>
 
-                    <div class="mt-10 flex flex-col sm:flex-row justify-end gap-4 border-t border-gray-100 pt-6">
-                        <button wire:click="volver" type="button" class="px-6 py-3 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors">
-                            Descartar
-                        </button>
-                        <button wire:click.prevent="store()" type="button" 
-                                class="px-10 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center">
-                            <span wire:loading wire:target="store" class="mr-2 italic">Procesando...</span>
-                            {{ $view == 'create' ? 'Guardar Ciclo' : 'Actualizar Cambios' }}
+                    <div class="mt-10 flex justify-end gap-4 border-t border-gray-100 pt-6">
+                        <button wire:click="volver" class="px-6 py-3 text-sm font-bold text-gray-400 hover:text-gray-600">Descartar</button>
+                        <button wire:click.prevent="store()" class="px-10 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg transition-all active:scale-95">
+                            {{ $view == 'create' ? 'Guardar Ciclo' : 'Actualizar' }}
                         </button>
                     </div>
                 </div>
             @endif
-
         </div>
     </div>
 
-    <!-- Estilos adicionales para el Toggle -->
+    <!-- MODAL DE ELIMINACIÓN CORREGIDO -->
+    @if($cicloIdBeingDeleted)
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+        <!-- Backdrop (Fondo oscuro con desenfoque) -->
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
+
+        <!-- Caja del Modal -->
+        <div class="relative bg-white rounded-2xl max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-red-50 border border-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Eliminar Registro?</h3>
+                        <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
+                            Esta acción eliminará el ciclo de forma permanente. No podrá recuperar la información después de confirmar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row-reverse gap-3 mt-2">
+                <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-6 py-2.5 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition-all active:scale-95">
+                    Confirmar Eliminación
+                </button>
+                <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-6 py-2.5 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                    Descartar
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <style>
         .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
         .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }

@@ -15,8 +15,10 @@ class Carrera extends Component
     public $nombre, $area_id, $carrera_id;
     public $search = '';
     
-    // Propiedad para la vista de detalle
     public $selectedCarrera;
+
+    // NUEVO: Propiedad para controlar el modal de eliminación
+    public $carreraIdBeingDeleted = null;
 
     protected function rules()
     {
@@ -40,10 +42,8 @@ class Carrera extends Component
         ]);
     }
 
-    // --- NUEVO: Método para ver detalles ---
     public function show($id)
     {
-        // Cargamos la carrera con su área, los ciclos de esa área y los alumnos con su identidad
         $this->selectedCarrera = CarreraModel::with([
             'area', 
             'ciclos', 
@@ -60,6 +60,15 @@ class Carrera extends Component
         $this->view = 'create';
     }
 
+    public function edit($id)
+    {
+        $carrera = CarreraModel::findOrFail($id);
+        $this->carrera_id = $id;
+        $this->nombre = $carrera->nombre;
+        $this->area_id = $carrera->area_id;
+        $this->view = 'edit';
+    }
+
     public function volver()
     {
         $this->resetInputFields();
@@ -68,7 +77,8 @@ class Carrera extends Component
 
     private function resetInputFields()
     {
-        $this->reset(['nombre', 'area_id', 'carrera_id', 'selectedCarrera']);
+        // ACTUALIZADO: Resetear también el ID de eliminación
+        $this->reset(['nombre', 'area_id', 'carrera_id', 'selectedCarrera', 'carreraIdBeingDeleted']);
         $this->resetValidation();
     }
 
@@ -85,18 +95,41 @@ class Carrera extends Component
         $this->volver();
     }
 
-    public function edit($id)
+    // --- NUEVOS MÉTODOS PARA EL MODAL DE ELIMINACIÓN ---
+
+    /**
+     * Guarda el ID de la carrera y activa la visualización del modal en el front
+     */
+    public function confirmDelete($id)
     {
-        $carrera = CarreraModel::findOrFail($id);
-        $this->carrera_id = $id;
-        $this->nombre = $carrera->nombre;
-        $this->area_id = $carrera->area_id;
-        $this->view = 'edit';
+        $this->carreraIdBeingDeleted = $id;
     }
 
-    public function delete($id)
+    /**
+     * Limpia el ID y cierra el modal
+     */
+    public function cancelDelete()
     {
-        CarreraModel::find($id)->delete();
-        session()->flash('message', 'Carrera eliminada del sistema.');
+        $this->carreraIdBeingDeleted = null;
+    }
+
+    /**
+     * Ejecuta la eliminación definitiva (sin parámetros)
+     */
+    public function delete()
+    {
+        if ($this->carreraIdBeingDeleted) {
+            $carrera = CarreraModel::findOrFail($this->carreraIdBeingDeleted);
+
+            // Validamos si la carrera tiene alumnos asociados
+            if ($carrera->alumnos()->exists()) {
+                session()->flash('error', 'No se puede eliminar la carrera "' . $carrera->nombre . '" porque tiene alumnos inscritos. Reasigne a los alumnos antes de continuar.');
+            } else {
+                $carrera->delete();
+                session()->flash('message', 'Carrera eliminada del sistema.');
+            }
+
+            $this->carreraIdBeingDeleted = null;
+        }
     }
 }

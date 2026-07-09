@@ -16,9 +16,11 @@
                     </flux:sidebar.item>
             @role('admin')        
                 <flux:sidebar.group :heading="__('Gestion')" class="grid">     
+<!--
                     <flux:sidebar.item icon="folder" :href="route('CRUD.ciclos')" :current="request()->routeIs('CRUD.ciclos')" wire:navigate>
                         {{ __('Ciclos') }}
                     </flux:sidebar.item>
+                -->
                     <flux:sidebar.item icon="folder" :href="route('CRUD.cursos')" :current="request()->routeIs('CRUD.cursos')" wire:navigate>
                         {{ __('Cursos') }}
                     </flux:sidebar.item>
@@ -28,24 +30,31 @@
                     <flux:sidebar.item icon="folder" :href="route('CRUD.alumnos')" :current="request()->routeIs('CRUD.alumnos')" wire:navigate>
                         {{ __('Alumnos') }}
                     </flux:sidebar.item>
+<!--
                     <flux:sidebar.item icon="folder" :href="route('CRUD.carreras')" :current="request()->routeIs('CRUD.carreras')" wire:navigate>
                         {{ __('Carreras') }}
                     </flux:sidebar.item>
+                -->
                     <flux:sidebar.item icon="folder" :href="route('CRUD.matriculas')" :current="request()->routeIs('CRUD.matriculas')" wire:navigate>
                         {{ __('Matrículas') }}
                     </flux:sidebar.item>
+    
                 </flux:sidebar.group>
+    
             @endrole    
                 <flux:sidebar.group :heading="__('Registro')" class="grid">
+    
                     <flux:sidebar.item icon="folder" :href="route('CRUD.gestion-pagos')" :current="request()->routeIs('CRUD.gestion-pagos')" wire:navigate>
                         {{ __('Registro Pagos') }}
                     </flux:sidebar.item>    
                     <flux:sidebar.item icon="folder" :href="route('CRUD.asistencias')" :current="request()->routeIs('CRUD.asistencias')" wire:navigate>
                         {{ __('Asistencias') }}
                     </flux:sidebar.item>
+    
                     <flux:sidebar.item icon="folder" :href="route('CRUD.horarios')" :current="request()->routeIs('CRUD.horarios')" wire:navigate>
                         {{ __('Horarios') }}
                     </flux:sidebar.item>
+    
                 </flux:sidebar.group>
                      @role('admin')
                     <flux:sidebar.item icon="folder" :href="route('CRUD.simulacros')" :current="request()->routeIs('CRUD.simulacros')" wire:navigate>
@@ -55,6 +64,8 @@
                     <flux:sidebar.item icon="folder" :href="route('CRUD.puntajes-simulacro')" :current="request()->routeIs('CRUD.puntajes-simulacro')" wire:navigate>
                         {{ __('Puntajes Simulacro') }}
                     </flux:sidebar.item>  
+
+                  
 
             </flux:sidebar.nav>
 

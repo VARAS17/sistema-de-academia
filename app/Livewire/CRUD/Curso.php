@@ -12,17 +12,13 @@ class Curso extends Component
 {
     use WithPagination;
 
-    // Control de vista: 'index', 'create', 'edit', 'show'
     public $view = 'index';
-
-    // Propiedades del formulario
     public $nombre, $area_id, $ciclo_id, $curso_id;
-    
-    // Propiedad para almacenar el curso seleccionado en la vista de detalle
     public $selectedCurso;
-    
-    // Propiedades de búsqueda
     public $search = '';
+
+    // NUEVO: Propiedad para rastrear el curso a eliminar
+    public $cursoIdBeingDeleted = null;
 
     protected $rules = [
         'nombre' => 'required|min:3|string',
@@ -30,9 +26,6 @@ class Curso extends Component
         'ciclo_id' => 'required|exists:ciclos,id',
     ];
 
-    /**
-     * Resetear ciclo_id cuando cambie el area_id para mantener integridad
-     */
     public function updatedAreaId($value)
     {
         $this->ciclo_id = '';
@@ -46,21 +39,14 @@ class Curso extends Component
                         ->orderBy('id', 'desc')
                         ->paginate(10),
             'areas' => Area::all(),
-            // Filtrar ciclos según el área seleccionada en el formulario
             'ciclos' => Ciclo::where('area_id', $this->area_id)
                         ->where('activo', true)
                         ->get()
         ]);
     }
 
-    // --- Navegación y Detalles ---
-
-    /**
-     * Carga un curso específico con sus relaciones (incluyendo docentes)
-     */
     public function show($id)
     {
-        // Cargamos el curso con su área, su ciclo y la lista de docentes con sus datos de identidad (user)
         $this->selectedCurso = CursoModel::with(['area', 'ciclo', 'docentes.user'])->findOrFail($id);
         $this->view = 'show';
     }
@@ -84,9 +70,6 @@ class Curso extends Component
         $this->view = 'edit';
     }
 
-    /**
-     * Método para limpiar estado y volver al listado principal
-     */
     public function volver()
     {
         $this->resetInputFields();
@@ -94,11 +77,10 @@ class Curso extends Component
     }
 
     private function resetInputFields() {
-        $this->reset(['nombre', 'area_id', 'ciclo_id', 'curso_id', 'selectedCurso']);
+        // ACTUALIZADO: Resetear también el ID de eliminación
+        $this->reset(['nombre', 'area_id', 'ciclo_id', 'curso_id', 'selectedCurso', 'cursoIdBeingDeleted']);
         $this->resetValidation();
     }
-
-    // --- Acciones de persistencia ---
 
     public function store()
     {
@@ -115,9 +97,25 @@ class Curso extends Component
         $this->volver();
     }
 
-    public function delete($id)
+    // NUEVO: Método para abrir el modal de confirmación
+    public function confirmDelete($id)
     {
-        CursoModel::find($id)->delete();
-        session()->flash('message', 'Curso eliminado.');
+        $this->cursoIdBeingDeleted = $id;
+    }
+
+    // NUEVO: Método para cerrar el modal sin hacer nada
+    public function cancelDelete()
+    {
+        $this->cursoIdBeingDeleted = null;
+    }
+
+    // ACTUALIZADO: Ahora no recibe $id, usa la propiedad del componente
+    public function delete()
+    {
+        if ($this->cursoIdBeingDeleted) {
+            CursoModel::find($this->cursoIdBeingDeleted)->delete();
+            session()->flash('message', 'Curso eliminado.');
+            $this->cursoIdBeingDeleted = null; // Cerrar modal tras eliminar
+        }
     }
 }
