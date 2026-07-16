@@ -60,7 +60,36 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
+/* ==========================================================
+   ACCESIBILIDAD: Tamaño de fuente
+   Escalan el font-size del <html>, lo que afecta a todo
+   lo que esté definido en rem (por defecto, Tailwind usa rem)
+   ========================================================== */
+html.font-sm  { font-size: 87.5%; }   /* ~14px */
+html.font-base { font-size: 100%; }   /* 16px  */
+html.font-lg  { font-size: 112.5%; }  /* ~18px */
+html.font-xl  { font-size: 125%; }    /* ~20px */
+html.font-2xl { font-size: 137.5%; }  /* ~22px */
 
+/* ==========================================================
+   ACCESIBILIDAD: Modo de color para daltonismo
+   Usa los filtros SVG definidos en el <body> del layout
+   ========================================================== */
+html.color-protanopia {
+    filter: url(#protanopia-filter);
+}
+
+html.color-deuteranopia {
+    filter: url(#deuteranopia-filter);
+}
+
+html.color-tritanopia {
+    filter: url(#tritanopia-filter);
+}
+
+html.color-achromatopsia {
+    filter: url(#achromatopsia-filter);
+}
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */

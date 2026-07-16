@@ -1,5 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      class="dark font-{{ request()->cookie('font_size', 'base') }} color-{{ request()->cookie('color_mode', 'normal') }}"
+      x-data
+      x-on:color-mode-changed.window="document.documentElement.className =
+          document.documentElement.className.replace(/color-\S+/, '') + ' color-' + $event.detail.mode"
+      x-on:font-size-changed.window="document.documentElement.className =
+          document.documentElement.className.replace(/font-\S+/, '') + ' font-' + $event.detail.size">
     <head>
         @include('partials.head')
 
@@ -50,7 +56,52 @@
         </style>
     </head>
     <body class="min-h-screen bg-zinc-50 dark:bg-zinc-900">
-        
+
+        <svg class="hidden" aria-hidden="true">
+        <defs>
+            <!-- PROTANOPIA (Rojo débil) -->
+            <filter id="protanopia-filter">
+            <feColorMatrix type="matrix" values="
+                0.567, 0.433, 0,     0, 0
+                0.558, 0.442, 0,     0, 0
+                0,     0.242, 0.758, 0, 0
+                0,     0,     0,     1, 0"/>
+            </filter>
+
+            <!-- DEUTERANOPIA (Verde débil) - El más común -->
+            <filter id="deuteranopia-filter">
+            <feColorMatrix type="matrix" values="
+                0.625, 0.375, 0,   0, 0
+                0.7,   0.3,   0,   0, 0
+                0,     0.3,   0.7, 0, 0
+                0,     0,     0,   1, 0"/>
+            </filter>
+
+            <!-- TRITANOPIA (Azul débil) -->
+            <filter id="tritanopia-filter">
+            <feColorMatrix type="matrix" values="
+                0.95, 0.05,  0,     0, 0
+                0,    0.433, 0.567, 0, 0
+                0,    0.475, 0.525, 0, 0
+                0,    0,     0,     1, 0"/>
+            </filter>
+
+            <!-- ACROMATOPSIA (Sin color) + Contraste -->
+            <filter id="achromatopsia-filter">
+            <feColorMatrix type="matrix" values="
+                0.299, 0.587, 0.114, 0, 0
+                0.299, 0.587, 0.114, 0, 0
+                0.299, 0.587, 0.114, 0, 0
+                0,     0,     0,     1, 0"/>
+            <feComponentTransfer>
+                <feFuncR type="linear" slope="1.3" intercept="-0.15"/>
+                <feFuncG type="linear" slope="1.3" intercept="-0.15"/>
+                <feFuncB type="linear" slope="1.3" intercept="-0.15"/>
+            </feComponentTransfer>
+            </filter>
+        </defs>
+        </svg>
+
         <!-- Sidebar -->
         <flux:sidebar sticky collapsible="mobile" class="border-e border-blue-900">
             <flux:sidebar.header>
@@ -108,7 +159,8 @@
 
             <flux:spacer />
 
-            <div class="border-t border-white/10 pt-4">
+            <div class="border-t border-white/10 pt-4 px-2 flex items-center justify-between">
+                <livewire:accessibility-menu />
                 <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
             </div>
         </flux:sidebar>
@@ -117,6 +169,7 @@
         <flux:header class="lg:hidden bg-[#0b2e51] border-b border-blue-900">
             <flux:sidebar.toggle class="lg:hidden text-white" icon="bars-2" inset="left" />
             <flux:spacer />
+            <livewire:accessibility-menu />
             <flux:dropdown position="top" align="end">
                 <flux:profile :initials="auth()->user()->initials()" icon-trailing="chevron-down" />
                 <flux:menu>
