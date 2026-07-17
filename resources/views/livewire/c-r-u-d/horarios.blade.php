@@ -22,7 +22,6 @@
 
     @if($view === 'index')
         <!-- VISTA DE LISTADO -->
-        
         <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
                 <h1 class="text-3xl font-black text-gray-800 tracking-tighter uppercase">Horarios Académicos</h1>
@@ -75,33 +74,47 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-down">
             @forelse($horarios as $horario)
                 <div class="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 group flex flex-col">
-                    <div class="relative h-64 overflow-hidden">
+                    <!-- CONTENEDOR DE IMAGEN CON CLICK PARA PANTALLA COMPLETA -->
+                    <div class="relative h-64 overflow-hidden cursor-pointer group/img" wire:click="verImagen('{{ asset('storage/' . $horario->imagen) }}')">
                         <img src="{{ asset('storage/' . $horario->imagen) }}" class="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700">
+                        
+                        <!-- Overlay de Zoom -->
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                            <div class="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30 text-white">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                            </div>
+                        </div>
+
                         <div class="absolute top-4 left-4 flex flex-col gap-2">
                             <span class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-xl">{{ $horario->area->nombre }}</span>
                             <span class="bg-white/90 backdrop-blur-md text-gray-800 text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-lg border border-white/20">Ciclo: {{ $horario->ciclo->nombre }}</span>
                         </div>
                     </div>
+
                     <div class="p-6 flex flex-col flex-grow">
                         <h2 class="text-xl font-black text-gray-800 mb-6 truncate tracking-tight uppercase">{{ $horario->nombre }}</h2>
-                        @role('admin')
+                        
                         <div class="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
-                            <button wire:click="edit({{ $horario->id }})" class="flex items-center text-xs font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-all">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                Editar
-                            </button>
-                            <!-- BOTÓN DISPARADOR DEL MODAL -->
-                            <button wire:click="abrirConfirmacionEliminacion({{ $horario->id }})" class="flex items-center text-xs font-black text-rose-400 hover:text-rose-600 uppercase tracking-widest transition-all">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                Eliminar
-                            </button>
+                            @role('admin')
+                                <button wire:click="edit({{ $horario->id }})" class="flex items-center text-xs font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-all">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Editar
+                                </button>
+                                <button wire:click="abrirConfirmacionEliminacion({{ $horario->id }})" class="flex items-center text-xs font-black text-rose-400 hover:text-rose-600 uppercase tracking-widest transition-all">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Eliminar
+                                </button>
+                            @else
+                                <button wire:click="verImagen('{{ asset('storage/' . $horario->imagen) }}')" class="w-full py-3 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-transparent hover:border-indigo-100 flex items-center justify-center">
+                                    Ver Horario Completo
+                                </button>
+                            @endrole
                         </div>
-                        @endrole
                     </div>
                 </div>
             @empty
                 <div class="col-span-full py-20 bg-white rounded-[3rem] border-2 border-dashed border-gray-100 text-center">
-                    <p class="text-gray-400 font-bold">No hay horarios registrados.</p>
+                    <p class="text-gray-400 font-bold uppercase text-xs tracking-widest">No hay horarios registrados.</p>
                 </div>
             @endforelse
         </div>
@@ -113,41 +126,53 @@
                 <div class="flex items-center justify-between mb-10 border-b border-gray-50 pb-6">
                     <div>
                         <h3 class="text-2xl font-black text-gray-800 uppercase tracking-tighter">{{ $horario_id ? 'Actualizar Horario' : 'Nuevo Horario' }}</h3>
-                        <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">SGA Registro Académico</p>
+                        <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">Formatos aceptados: PNG, JPG, JPEG</p>
                     </div>
                 </div>
 
                 <div class="space-y-8">
                     <div class="space-y-2">
                         <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">Nombre del Horario</label>
-                        <input type="text" wire:model="nombre" class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl p-4 font-bold text-sm focus:border-indigo-500 transition-all outline-none">
+                        <input type="text" wire:model="nombre" placeholder="Ej: Horario 2024-II - Ing. Sistemas" class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl p-4 font-bold text-sm focus:border-indigo-500 transition-all outline-none">
                         @error('nombre') <p class="text-rose-500 text-[10px] font-black uppercase mt-1 ml-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">Área</label>
-                            <select wire:model.live="area_id" class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl p-4 font-bold text-xs uppercase focus:border-indigo-500 outline-none">
+                            <select wire:model.live="area_id" class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl p-4 font-bold text-xs uppercase focus:border-indigo-500 outline-none cursor-pointer">
                                 <option value="">Seleccione Área</option>
                                 @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
                             </select>
+                            @error('area_id') <p class="text-rose-500 text-[10px] font-black uppercase mt-1 ml-1">{{ $message }}</p> @enderror
                         </div>
                         <div class="space-y-2">
                             <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">Ciclo</label>
-                            <select wire:model="ciclo_id" class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl p-4 font-bold text-xs uppercase focus:border-indigo-500 outline-none">
+                            <select wire:model="ciclo_id" class="w-full bg-gray-50 border-2 border-gray-50 rounded-2xl p-4 font-bold text-xs uppercase focus:border-indigo-500 outline-none cursor-pointer">
                                 <option value="">Seleccione Ciclo</option>
                                 @foreach($ciclos as $ciclo) <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option> @endforeach
                             </select>
+                            @error('ciclo_id') <p class="text-rose-500 text-[10px] font-black uppercase mt-1 ml-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">Imagen del Horario</label>
-                        <div class="border-2 border-gray-100 border-dashed rounded-[2rem] bg-gray-50 p-10 text-center">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase ml-1">Imagen del Horario (PNG, JPG)</label>
+                        <div class="border-2 border-gray-100 border-dashed rounded-[2rem] bg-gray-50 p-10 text-center relative">
                             @if ($imagen)
-                                <img src="{{ $imagen->temporaryUrl() }}" class="mx-auto h-56 w-auto rounded-2xl shadow-xl mb-4">
+                                <div class="mb-4 relative inline-block">
+                                    <img src="{{ $imagen->temporaryUrl() }}" class="mx-auto h-56 w-auto rounded-2xl shadow-xl">
+                                    <button wire:click="$set('imagen', null)" class="absolute -top-2 -right-2 bg-rose-500 text-white p-1 rounded-full shadow-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             @endif
-                            <input type="file" wire:model="imagen" class="text-xs font-black uppercase text-indigo-600">
+                            <div class="flex flex-col items-center">
+                                <input type="file" wire:model="imagen" id="upload_img" accept="image/png, image/jpeg, image/jpg" class="hidden">
+                                <label for="upload_img" class="cursor-pointer px-6 py-3 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:bg-gray-100 transition-all">
+                                    {{ $imagen ? 'Cambiar Imagen' : 'Seleccionar Archivo' }}
+                                </label>
+                            </div>
                             @error('imagen') <p class="text-rose-500 text-[10px] font-black uppercase mt-2">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -155,8 +180,24 @@
 
                 <div class="mt-14 flex justify-end gap-6 border-t border-gray-50 pt-10">
                     <button wire:click="cancel" class="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Cancelar</button>
-                    <button wire:click="save" class="px-12 py-4 bg-indigo-600 text-white font-black text-xs uppercase rounded-2xl shadow-2xl active:scale-95 transition-all">Guardar Horario</button>
+                    <button wire:click="save" wire:loading.attr="disabled" class="px-12 py-4 bg-indigo-600 text-white font-black text-xs uppercase rounded-2xl shadow-2xl active:scale-95 transition-all disabled:opacity-50">
+                        <span wire:loading.remove>Guardar Horario</span>
+                        <span wire:loading>Procesando...</span>
+                    </button>
                 </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- MODAL DE PANTALLA COMPLETA (IMAGEN) -->
+    @if($mostrarImagenModal)
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in" wire:click.self="cerrarImagen">
+            <button wire:click="cerrarImagen" class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="max-w-7xl w-full h-full flex items-center justify-center">
+                <img src="{{ $imagenUrlActual }}" class="max-w-full max-h-full object-contain shadow-2xl rounded-lg animate-scale-up">
             </div>
         </div>
     @endif
@@ -167,31 +208,18 @@
             <div class="bg-white rounded-[2.5rem] max-w-md w-full shadow-2xl overflow-hidden border border-gray-100">
                 <div class="p-8">
                     <div class="flex items-start">
-                        <!-- Icono de Advertencia -->
                         <div class="flex-shrink-0 bg-rose-100 p-3 rounded-2xl text-rose-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </div>
-                        
                         <div class="ml-6">
                             <h3 class="text-xl font-black text-gray-800 uppercase tracking-tight">¿Confirmar Eliminación?</h3>
-                            <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">
-                                Esta acción eliminará el horario de forma permanente del sistema. Recuerde que una vez borrado, los alumnos no podrán visualizar su cronograma de clases asignado.
-                            </p>
+                            <p class="mt-2 text-sm text-gray-500 font-medium leading-relaxed">Esta acción eliminará el horario de forma permanente. Los alumnos ya no podrán consultarlo.</p>
                         </div>
                     </div>
 
-                    <!-- Botones de Acción -->
                     <div class="mt-10 flex gap-3">
-                        <button wire:click="cerrarConfirmacionEliminacion" 
-                                class="flex-1 px-6 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black uppercase text-[10px] hover:bg-gray-100 transition-all">
-                            Cancelar
-                        </button>
-                        <button wire:click="delete" 
-                                class="flex-[2] px-6 py-4 bg-rose-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-xl shadow-rose-200 hover:bg-rose-700 active:scale-95 transition-all">
-                            Sí, Eliminar
-                        </button>
+                        <button wire:click="cerrarConfirmacionEliminacion" class="flex-1 px-6 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black uppercase text-[10px] hover:bg-gray-100 transition-all">Cancelar</button>
+                        <button wire:click="delete" class="flex-[2] px-6 py-4 bg-rose-600 text-white rounded-2xl font-black uppercase text-[10px] shadow-xl shadow-rose-200 hover:bg-rose-700 active:scale-95 transition-all">Sí, Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -201,7 +229,9 @@
     <style>
         .animate-fade-in-down { animation: fadeInDown 0.4s ease-out; }
         .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        .animate-scale-up { animation: scaleUp 0.3s ease-out; }
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </div>

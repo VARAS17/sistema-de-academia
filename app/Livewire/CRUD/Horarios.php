@@ -27,6 +27,10 @@ class Horarios extends Component
     public $confirmandoEliminacion = false;
     public $horario_id_eliminar;
 
+    // Propiedades para Visualización de Imagen (Pantalla Completa)
+    public $mostrarImagenModal = false;
+    public $imagenUrlActual = '';
+
     // Control de navegación
     public $view = 'index'; 
 
@@ -36,19 +40,18 @@ class Horarios extends Component
         $user = Auth::user();
 
         if (!$user->hasRole('admin')) {
-            // BUSCAR MATRÍCULA ACTIVA PARA SACAR AREA Y CICLO
             $matricula = \App\Models\Matricula::where('alumno_id', $user->id)
                             ->where('estado', 'Activa')
                             ->latest()
                             ->first();
 
             if ($matricula) {
-                // Sacamos el área a través del ciclo de la matrícula
                 $this->filtro_area = $matricula->ciclo->area_id; 
                 $this->filtro_ciclo = $matricula->ciclo_id;
             }
         }
     }
+
     public function updatedAreaId($value)
     {
         $this->ciclos = Ciclo::where('area_id', $value)->get();
@@ -59,6 +62,20 @@ class Horarios extends Component
     {
         $this->ciclos_filtro = Ciclo::where('area_id', $value)->get();
         $this->filtro_ciclo = null;
+    }
+
+    // --- Métodos de Imagen (Pantalla Completa) ---
+
+    public function verImagen($url)
+    {
+        $this->imagenUrlActual = $url;
+        $this->mostrarImagenModal = true;
+    }
+
+    public function cerrarImagen()
+    {
+        $this->mostrarImagenModal = false;
+        $this->imagenUrlActual = '';
     }
 
     // --- Métodos de Confirmación de Eliminación ---
@@ -92,8 +109,6 @@ class Horarios extends Component
         session()->flash('message', 'Horario eliminado correctamente.');
     }
 
-    // --- Gestión de Breadcrumbs dinámicos ---
-
     private function getBreadcrumbs()
     {
         $breadcrumbs = [
@@ -109,8 +124,6 @@ class Horarios extends Component
 
         return $breadcrumbs;
     }
-
-    // --- Métodos de Navegación y CRUD ---
 
     public function create()
     {
@@ -143,11 +156,14 @@ class Horarios extends Component
     {
         if (!Auth::user()->hasRole('admin')) abort(403);
 
+        // Validación corregida: solo acepta png, jpg, jpeg
         $this->validate([
             'nombre' => 'required|string|max:255',
             'area_id' => 'required|exists:areas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
-            'imagen' => $this->horario_id ? 'nullable|image|max:2048' : 'required|image|max:2048',
+            'imagen' => $this->horario_id 
+                ? 'nullable|image|mimes:png,jpg,jpeg|max:2048' 
+                : 'required|image|mimes:png,jpg,jpeg|max:2048',
         ]);
 
         $data = [
@@ -180,6 +196,8 @@ class Horarios extends Component
         $this->ciclos = [];
         $this->confirmandoEliminacion = false;
         $this->horario_id_eliminar = null;
+        $this->mostrarImagenModal = false;
+        $this->imagenUrlActual = '';
     }
 
     public function render()
@@ -191,7 +209,6 @@ class Horarios extends Component
             if ($this->filtro_area) $query->where('area_id', $this->filtro_area);
             if ($this->filtro_ciclo) $query->where('ciclo_id', $this->filtro_ciclo);
         } else {
-            // LÓGICA PARA EL ALUMNO USANDO MATRÍCULA
             $matricula = \App\Models\Matricula::where('alumno_id', $user->id)
                             ->where('estado', 'Activa')
                             ->latest()
@@ -201,7 +218,6 @@ class Horarios extends Component
                 $query->where('area_id', $matricula->ciclo->area_id)
                     ->where('ciclo_id', $matricula->ciclo_id);
             } else {
-                // Si no tiene matrícula activa, no ve ningún horario
                 $query->whereRaw('1 = 0');
             }
         }
