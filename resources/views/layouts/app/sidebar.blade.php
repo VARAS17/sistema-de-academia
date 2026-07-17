@@ -26,10 +26,10 @@
                 margin-bottom: 2px;
             }
 
-            /* Item ACTIVO (Como en tu imagen, pero con texto azul para legibilidad) */
+            /* Item ACTIVO */
             [data-flux-sidebar-item][data-current] {
                 background-color: var(--brand-yellow) !important;
-                color: #0b2e51 !important; 
+                color: #0b2e51 !important;
                 font-weight: 600 !important;
             }
 
@@ -53,6 +53,12 @@
                 padding-left: 0.75rem;
                 margin-top: 1rem;
             }
+
+            /* Tamaño táctil mínimo y contraste para botones de acción (accesibilidad + perfil) */
+            [data-flux-button] {
+                min-width: 44px;
+                min-height: 44px;
+            }
         </style>
     </head>
     <body class="min-h-screen bg-zinc-50 dark:bg-zinc-900">
@@ -68,7 +74,7 @@
                 0,     0,     0,     1, 0"/>
             </filter>
 
-            <!-- DEUTERANOPIA (Verde débil) - El más común -->
+            <!-- DEUTERANOPIA (Verde débil) -->
             <filter id="deuteranopia-filter">
             <feColorMatrix type="matrix" values="
                 0.625, 0.375, 0,   0, 0
@@ -116,8 +122,8 @@
                     {{ __('Dashboard') }}
                 </flux:sidebar.item>
 
-                @role('admin')        
-                    <flux:sidebar.group :heading="__('Gestión')">     
+                @role('admin')
+                    <flux:sidebar.group :heading="__('Gestión')">
                         <flux:sidebar.item icon="folder" :href="route('CRUD.cursos')" :current="request()->routeIs('CRUD.cursos')" wire:navigate>
                             {{ __('Cursos') }}
                         </flux:sidebar.item>
@@ -131,12 +137,12 @@
                             {{ __('Matrículas') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
-                @endrole    
+                @endrole
 
                 <flux:sidebar.group :heading="__('Registro')">
                     <flux:sidebar.item icon="folder" :href="route('CRUD.gestion-pagos')" :current="request()->routeIs('CRUD.gestion-pagos')" wire:navigate>
                         {{ __('Registro Pagos') }}
-                    </flux:sidebar.item>    
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="folder" :href="route('CRUD.asistencias')" :current="request()->routeIs('CRUD.asistencias')" wire:navigate>
                         {{ __('Asistencias') }}
                     </flux:sidebar.item>
@@ -148,21 +154,26 @@
                 <flux:sidebar.group :heading="__('Evaluación')">
                     @role('admin')
                         <flux:sidebar.item icon="folder" :href="route('CRUD.simulacros')" :current="request()->routeIs('CRUD.simulacros')" wire:navigate>
-                            {{ __('Simulacros') }}  
+                            {{ __('Simulacros') }}
                         </flux:sidebar.item>
                     @endrole
                     <flux:sidebar.item icon="folder" :href="route('CRUD.puntajes-simulacro')" :current="request()->routeIs('CRUD.puntajes-simulacro')" wire:navigate>
                         {{ __('Puntajes Simulacro') }}
-                    </flux:sidebar.item>  
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
-            <div class="border-t border-white/10 pt-4 px-2 flex items-center justify-between">
-                <livewire:accessibility-menu />
-                <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
-            </div>
+            <!--
+                Footer del sidebar: accesibilidad + usuario.
+                Ambos componentes internos deben mostrar ahora un label
+                o tooltip visible (ver snippets debajo de este archivo).
+            -->
+                <div class="border-t border-white/10 pt-4 px-2 flex flex-col gap-2">
+                    <livewire:accessibility-menu />
+                    <x-desktop-user-menu class="hidden lg:block w-full" :name="auth()->user()->name" />
+                </div>
         </flux:sidebar>
 
         <!-- Header para Mobile -->
@@ -182,7 +193,7 @@
             </flux:dropdown>
         </flux:header>
 
-        <!-- LA CLAVE ESTÁ AQUÍ: Usar flux:main para envolver el slot -->
+        <!-- flux:main envuelve el slot -->
         <flux:main>
             <div class="py-6 px-4">
                 {{ $slot }}
