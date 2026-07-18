@@ -14,32 +14,81 @@ class Docente extends Component
 {
     use WithPagination;
 
+    // Propiedades de Control de Vista
     public $view = 'index';
+    public $tab = 1;
 
-    // Propiedades de Identidad (Separadas para evitar conflictos)
-    public $docente_id; // ID de la tabla 'docentes'
-    public $user_id;    // ID de la tabla 'users'
+    // Propiedades de Identidad (Base de Datos)
+    public $docente_id; 
+    public $user_id;    
     
     // Propiedades de Formulario
-    public $name, $email, $password, $dni, $telefono, $especialidad, $fecha_contratacion;
+    public $name, $dni, $telefono, $especialidad, $fecha_contratacion;
     public $selectedCursos = []; 
     public $search = '';
 
-    // Propiedades de Visualización
+    // Propiedades de Visualización y Borrado
     public $selectedDocente; 
     public $docenteIdBeingDeleted = null;
 
+    /**
+     * Reglas de Validación
+     */
     protected function rules()
     {
         return [
             'name' => 'required|string|min:3',
-            'email' => 'required|email|unique:users,email,' . ($this->user_id ?? 'NULL'),
-            'password' => $this->view == 'create' ? 'required|min:6' : 'nullable|min:6',
-            'dni' => 'required|unique:docentes,dni,' . ($this->docente_id ?? 'NULL'),
-            'especialidad' => 'required',
+            'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->docente_id ?? 'NULL'),
+            'telefono' => 'required|regex:/^9[0-9]{8}$/', // Empieza con 9 y tiene 9 dígitos
+            'especialidad' => 'required|string',
             'fecha_contratacion' => 'required|date',
             'selectedCursos' => 'required|array|min:1',
         ];
+    }
+
+    /**
+     * Mensajes de Error en Español
+     */
+    protected $messages = [
+        'name.required' => 'El nombre completo es obligatorio.',
+        'name.min' => 'El nombre debe tener al menos 3 caracteres.',
+        'dni.required' => 'El DNI es obligatorio.',
+        'dni.digits' => 'El DNI debe tener exactamente 8 dígitos.',
+        'dni.unique' => 'Este número de DNI ya está registrado.',
+        'telefono.required' => 'El número de teléfono es obligatorio.',
+        'telefono.regex' => 'El teléfono debe tener 9 dígitos y empezar con el número 9.',
+        'especialidad.required' => 'La especialidad es obligatoria.',
+        'fecha_contratacion.required' => 'La fecha de contratación es obligatoria.',
+        'selectedCursos.required' => 'Debe seleccionar al menos un curso.',
+        'selectedCursos.min' => 'Debe asignar al menos un curso al docente.',
+    ];
+
+    /**
+     * Paso 1: Valida los datos del perfil antes de permitir ver los cursos
+     */
+    public function goToStepTwo()
+    {
+        $this->validate([
+            'name' => 'required|string|min:3',
+            'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->docente_id ?? 'NULL'),
+            'telefono' => 'required|regex:/^9[0-9]{8}$/',
+            'especialidad' => 'required|string',
+            'fecha_contratacion' => 'required|date',
+        ]);
+
+        $this->tab = 2;
+    }
+
+    /**
+     * Cambiar de pestaña manualmente (con validación si se va a la 2)
+     */
+    public function setTab($tabNumber = 1)
+    {
+        if ($tabNumber == 2) {
+            $this->goToStepTwo();
+        } else {
+            $this->tab = $tabNumber;
+        }
     }
 
     public function render()
@@ -50,14 +99,11 @@ class Docente extends Component
                     $query->whereHas('user', function($q) {
                         $q->where('name', 'like', '%' . $this->search . '%');
                     })
-                    ->orWhere('dni', 'like', '%' . $this->search . '%')
-                    ->orWhere('especialidad', 'like', '%' . $this->search . '%');
+                    ->orWhere('dni', 'like', '%' . $this->search . '%');
                 })
                 ->orderBy('created_at', 'desc')
                 ->paginate(10),
             
-            // SOLUCIÓN AL ERROR DE AGRUPACIÓN:
-            // Agrupamos primero por Ciclo y luego por Área
             'allCursosGrouped' => Curso::with(['area', 'ciclo'])
                 ->get()
                 ->groupBy([
@@ -73,16 +119,19 @@ class Docente extends Component
         $this->view = 'create';
     }
 
-    public function edit($id)
+    /**
+     * EDIT: Corregido con $id = null para PHP 8.4
+     */
+    public function edit($id = null)
     {
+        if (!$id) return;
+
         $this->resetValidation();
         $docente = DocenteModel::with('user', 'cursos')->findOrFail($id);
         
         $this->docente_id = $id;
-        $this->user_id = $docente->user_id; // Guardamos el ID del usuario real
-        
+        $this->user_id = $docente->user_id; 
         $this->name = $docente->user->name;
-        $this->email = $docente->user->email;
         $this->dni = $docente->dni;
         $this->telefono = $docente->telefono;
         $this->especialidad = $docente->especialidad;
@@ -90,24 +139,30 @@ class Docente extends Component
         $this->selectedCursos = $docente->cursos->pluck('id')->toArray();
 
         $this->view = 'edit';
+        $this->tab = 1;
     }
 
+    /**
+     * GUARDAR / ACTUALIZAR
+     */
     public function store()
     {
         $this->validate();
 
         try {
             DB::transaction(function () {
-                // 1. Manejo del Usuario
+                // El email se genera con el DNI
+                $generatedEmail = $this->dni . '@sistema.com';
+
+                // 1. Usuario
                 $userData = [
                     'name' => $this->name,
-                    'email' => $this->email,
+                    'email' => $generatedEmail,
                 ];
 
-                if (!empty($this->password)) {
-                    $userData['password'] = Hash::make($this->password);
-                } elseif (!$this->user_id) {
-                    $userData['password'] = Hash::make('password123'); // Password por defecto solo en creación
+                // Contraseña inicial es el DNI
+                if (!$this->user_id) {
+                    $userData['password'] = Hash::make($this->dni);
                 }
 
                 $user = User::updateOrCreate(['id' => $this->user_id], $userData);
@@ -116,7 +171,7 @@ class Docente extends Component
                     $user->assignRole('docente');
                 }
 
-                // 2. Manejo del Perfil Docente
+                // 2. Perfil Docente
                 $docente = DocenteModel::updateOrCreate(
                     ['user_id' => $user->id], 
                     [
@@ -127,7 +182,7 @@ class Docente extends Component
                     ]
                 );
 
-                // 3. Sincronización de Cursos (Asignación Académica)
+                // 3. Cursos
                 $docente->cursos()->sync($this->selectedCursos);
             });
 
@@ -135,21 +190,26 @@ class Docente extends Component
             $this->showIndex();
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Ocurrió un error al procesar los datos: ' . $e->getMessage());
+            session()->flash('error', 'Ocurrió un error: ' . $e->getMessage());
         }
     }
 
-    public function show($id)
+    /**
+     * SHOW: Corregido con $id = null
+     */
+    public function show($id = null)
     {
+        if (!$id) return;
         $this->selectedDocente = DocenteModel::with(['user', 'cursos.area', 'cursos.ciclo'])->findOrFail($id);
         $this->view = 'show';
     }
 
-    // --- ELIMINACIÓN ---
-
-    public function confirmDelete($id)
+    /**
+     * CONFIRM DELETE: Corregido con $id = null
+     */
+    public function confirmDelete($id = null)
     {
-        // $id es el ID del Docente
+        if (!$id) return;
         $this->docenteIdBeingDeleted = $id;
     }
 
@@ -160,8 +220,6 @@ class Docente extends Component
                 $docente = DocenteModel::findOrFail($this->docenteIdBeingDeleted);
                 $user = User::findOrFail($docente->user_id);
                 
-                // Al eliminar el usuario, se debería eliminar el docente por cascada en BD
-                // o lo hacemos manual si no hay cascada:
                 $docente->cursos()->detach();
                 $docente->delete();
                 $user->delete();
@@ -179,8 +237,6 @@ class Docente extends Component
         $this->docenteIdBeingDeleted = null;
     }
 
-    // --- NAVEGACIÓN Y RESETS ---
-
     public function showIndex()
     {
         $this->resetInputFields();
@@ -195,9 +251,9 @@ class Docente extends Component
     private function resetInputFields()
     {
         $this->reset([
-            'name', 'email', 'password', 'dni', 'telefono', 
-            'especialidad', 'fecha_contratacion', 'selectedCursos', 
-            'docente_id', 'user_id', 'selectedDocente', 'docenteIdBeingDeleted'
+            'name', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 
+            'selectedCursos', 'docente_id', 'user_id', 'selectedDocente', 
+            'docenteIdBeingDeleted', 'tab'
         ]);
         $this->resetValidation();
     }

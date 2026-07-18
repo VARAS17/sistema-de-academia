@@ -14,7 +14,7 @@ use Livewire\WithPagination;
 
 class Matricula extends Component
 {
-    use WithPagination; // Eliminado WithFileUploads
+    use WithPagination;
 
     // Propiedades de navegación y búsqueda
     public string $view = 'index'; 
@@ -36,6 +36,8 @@ class Matricula extends Component
     public $estado = 'Activa';
     public $cuotas = [];
 
+    // --- VALIDACIONES EN ESPAÑOL ---
+
     protected function rules()
     {
         return [
@@ -46,10 +48,27 @@ class Matricula extends Component
             'monto_total' => 'required|numeric|min:1',
             'modalidad'   => 'required|in:Pago Unico,2 Cuotas,3 Cuotas',
             'estado'      => 'required|in:Pendiente,Activa,Anulada',
-            'cuotas.*.monto'             => 'required|numeric',
+            'cuotas.*.monto'             => 'required|numeric|min:1',
             'cuotas.*.fecha_vencimiento' => 'required|date',
         ];
     }
+
+    protected $messages = [
+        'alumno_id.required'    => 'Debe seleccionar un alumno de la lista.',
+        'alumno_id.exists'      => 'El alumno seleccionado no es válido.',
+        'area_id.required'      => 'Seleccione un área académica.',
+        'ciclo_id.required'     => 'Seleccione un ciclo.',
+        'carrera_id.required'   => 'Seleccione una carrera.',
+        'monto_total.required'  => 'El monto total es obligatorio.',
+        'monto_total.numeric'   => 'El monto debe ser un número.',
+        'monto_total.min'       => 'El monto debe ser mayor a 0.',
+        'modalidad.required'    => 'Seleccione una modalidad de pago.',
+        'estado.required'       => 'El estado es obligatorio.',
+        'cuotas.*.monto.required' => 'El monto de la cuota es obligatorio.',
+        'cuotas.*.monto.numeric'  => 'Debe ser un número.',
+        'cuotas.*.fecha_vencimiento.required' => 'La fecha es obligatoria.',
+        'cuotas.*.fecha_vencimiento.date'     => 'Formato de fecha inválido.',
+    ];
 
     // --- CICLO DE VIDA Y REACTIVIDAD ---
 
@@ -178,16 +197,15 @@ class Matricula extends Component
                         [
                             'monto' => $data['monto'],
                             'fecha_vencimiento' => $data['fecha_vencimiento'],
-                            // El estado por defecto debería ser 'Pendiente' en la base de datos
                         ]
                     );
                 }
             });
 
-            session()->flash('message', $this->matricula_id ? 'Matrícula actualizada.' : 'Matrícula exitosa.');
+            session()->flash('message', $this->matricula_id ? 'Matrícula actualizada correctamente.' : 'Matrícula registrada exitosamente.');
             $this->closeModal();
         } catch (\Exception $e) {
-            session()->flash('error', 'Error: ' . $e->getMessage());
+            session()->flash('error', 'Ocurrió un error: ' . $e->getMessage());
         }
     }
 
@@ -199,10 +217,13 @@ class Matricula extends Component
     public function delete()
     {
         if ($this->matriculaIdBeingDeleted) {
-            $matricula = MatriculaModel::findOrFail($this->matriculaIdBeingDeleted);
-            // Ya no se eliminan archivos de storage porque no se suben aquí
-            $matricula->delete(); 
-            session()->flash('message', 'Matrícula eliminada.');
+            try {
+                $matricula = MatriculaModel::findOrFail($this->matriculaIdBeingDeleted);
+                $matricula->delete(); 
+                session()->flash('message', 'Matrícula eliminada permanentemente.');
+            } catch (\Exception $e) {
+                session()->flash('error', 'No se pudo eliminar la matrícula.');
+            }
             $this->matriculaIdBeingDeleted = null;
         }
     }

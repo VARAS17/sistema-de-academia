@@ -1,5 +1,4 @@
-<div class="p-4 md:p-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900 relative">
-    
+<div class="py-1 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative">
     <!-- 1. SISTEMA DE BREADCRUMBS -->
     <nav class="flex mb-6 text-sm flex-wrap items-center text-gray-500" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-2 md:space-x-4">
@@ -119,13 +118,13 @@
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex justify-center gap-1">
-                                            <button wire:click="show({{ $alumno->user_id }})" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Ver Detalles">
+                                            <button wire:click="show({{ $alumno->id }})" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Ver Detalles">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                             </button>
-                                            <button wire:click="edit({{ $alumno->user_id }})" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm group">
+                                            <button wire:click="edit({{ $alumno->id }})" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm group">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                             </button>
-                                            <button wire:click="confirmDelete({{ $alumno->user_id }})" 
+                                            <button wire:click="confirmDelete({{ $alumno->id }})" 
                                                     class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
@@ -221,13 +220,15 @@
 
                             <div class="space-y-1">
                                 <label class="block text-sm font-bold text-gray-700 ml-1">DNI (Documento de Identidad)</label>
-                                <input wire:model="dni" type="text" maxlength="8" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-mono" placeholder="8 dígitos">
+                                <!-- MODIFICACIÓN: Agregado maxlength 8 y sugerencia de solo números -->
+                                <input wire:model="dni" type="text" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-mono" placeholder="8 dígitos exactos">
                                 @error('dni') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="space-y-1">
                                 <label class="block text-sm font-bold text-gray-700 ml-1">Teléfono / Celular</label>
-                                <input wire:model="telefono" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="Opcional">
+                                <!-- MODIFICACIÓN: Agregado maxlength 9 y placeholder de ejemplo que empieza con 9 -->
+                                <input wire:model="telefono" type="text" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full p-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none" placeholder="Ej. 9XXXXXXXX">
                                 @error('telefono') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tighter">{{ $message }}</p> @enderror
                             </div>
                         </div>
@@ -270,7 +271,7 @@
     <!-- MODAL DE ELIMINACIÓN -->
     @if($alumnoIdBeingDeleted)
     <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="$set('alumnoIdBeingDeleted', null)"></div>
 
         <div class="relative bg-white rounded-2xl max-w-lg w-full shadow-2xl transform transition-all border border-gray-100 z-[110] overflow-hidden">
             <div class="p-8">
@@ -292,7 +293,7 @@
                 <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-100">
                     Confirmar Eliminación
                 </button>
-                <button wire:click="cancelDelete" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                <button wire:click="$set('alumnoIdBeingDeleted', null)" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
                     Cancelar
                 </button>
             </div>

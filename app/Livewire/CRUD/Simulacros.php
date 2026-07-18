@@ -27,15 +27,29 @@ class Simulacros extends Component
     public $confirmandoEliminacion = false;
     public $simulacro_id_eliminar;
 
+    // --- REGLAS DE VALIDACIÓN ---
     protected function rules()
     {
         return [
-            'nombre' => 'required|min:5|string',
-            'area_id' => 'required|exists:areas,id',
+            'nombre'   => 'required|min:5|string',
+            'area_id'  => 'required|exists:areas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
-            'fecha' => 'required|date',
+            'fecha'    => 'required|date',
         ];
     }
+
+    // --- MENSAJES EN ESPAÑOL ---
+    protected $messages = [
+        'nombre.required'   => 'El nombre del simulacro es obligatorio.',
+        'nombre.min'        => 'El nombre debe tener al menos 5 caracteres.',
+        'nombre.string'     => 'El nombre debe ser una cadena de texto válida.',
+        'area_id.required'  => 'Debe seleccionar un área académica.',
+        'area_id.exists'    => 'El área seleccionada no es válida.',
+        'ciclo_id.required' => 'Debe seleccionar un ciclo académico.',
+        'ciclo_id.exists'   => 'El ciclo seleccionado no es válido.',
+        'fecha.required'    => 'La fecha del simulacro es obligatoria.',
+        'fecha.date'        => 'El formato de la fecha no es válido.',
+    ];
 
     public function updatedAreaId($value)
     {
@@ -65,7 +79,6 @@ class Simulacros extends Component
         $this->area_id = $simulacro->area_id;
         $this->ciclo_id = $simulacro->ciclo_id;
         $this->fecha = $simulacro->fecha->format('Y-m-d');
-        // No cargamos puntaje_maximo del modelo para mantener siempre el 400
         
         $this->view = 'edit';
     }
@@ -73,11 +86,11 @@ class Simulacros extends Component
     private function resetInputFields()
     {
         $this->reset(['nombre', 'area_id', 'ciclo_id', 'fecha', 'simulacro_id', 'confirmandoEliminacion', 'simulacro_id_eliminar']);
-        $this->puntaje_maximo = 400; // Asegurar el valor por defecto
+        $this->puntaje_maximo = 400; 
         $this->resetValidation();
     }
 
-    // --- Gestión de Eliminación (Modal Personalizado) ---
+    // --- Gestión de Eliminación ---
 
     public function abrirConfirmacionEliminacion($id)
     {
@@ -110,10 +123,10 @@ class Simulacros extends Component
             'area_id' => $this->area_id,
             'ciclo_id' => $this->ciclo_id,
             'fecha' => $this->fecha,
-            'puntaje_maximo' => 400, // Siempre se guarda con 400
+            'puntaje_maximo' => 400, 
         ]);
 
-        session()->flash('message', $this->simulacro_id ? 'Simulacro actualizado.' : 'Simulacro creado.');
+        session()->flash('message', $this->simulacro_id ? 'Simulacro actualizado correctamente.' : 'Simulacro creado con éxito.');
         $this->showIndex();
     }
 

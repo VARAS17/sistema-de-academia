@@ -1,4 +1,4 @@
-<div class="py-8 bg-gray-50 min-h-screen font-sans antialiased relative" x-data="{ tab: 1 }">
+<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative"{ tab: @entangle('tab') }">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- 1. BREADCRUMBS (Consistente) -->
@@ -42,7 +42,7 @@
 
         <div class="bg-white overflow-hidden shadow-sm border border-gray-100 sm:rounded-2xl">
 
-            <!-- VISTA: INDEX (LISTADO) - Sin cambios bruscos para mantener consistencia -->
+            <!-- VISTA: INDEX (LISTADO) -->
             @if($view == 'index')
                 <div class="p-6">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
@@ -67,7 +67,7 @@
                                 <tr>
                                     <th class="px-6 py-4">Docente</th>
                                     <th class="px-6 py-4">Especialidad</th>
-                                    <th class="px-6 py-4">Asignación</th>
+                                    <th class="px-6 py-4">DNI</th>
                                     <th class="px-6 py-4 text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -81,7 +81,6 @@
                                                 </div>
                                                 <div>
                                                     <div class="text-sm font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">{{ $docente->user->name }}</div>
-                                                    <div class="text-[11px] text-gray-400 font-medium italic">{{ $docente->user->email }}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -90,18 +89,12 @@
                                                 {{ $docente->especialidad }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center">
-                                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
-                                                    {{ $docente->cursos->count() }} cursos
-                                                </span>
-                                            </div>
-                                        </td>
+                                        <td class="px-6 py-4 font-mono text-xs text-gray-500">{{ $docente->dni }}</td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex justify-center space-x-1">
-                                                <button wire:click="show({{ $docente->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
-                                                <button wire:click="edit({{ $docente->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
-                                                <button wire:click="confirmDelete({{ $docente->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                                <button wire:click="show({{ $docente->user_id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                                                <button wire:click="edit({{ $docente->user_id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                                                <button wire:click="confirmDelete({{ $docente->user_id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -114,17 +107,15 @@
                     <div class="mt-6">{{ $docentes->links() }}</div>
                 </div>
 
-            <!-- VISTA: CREATE / EDIT (CON OPTIMIZACIÓN DE CARGA COGNITIVA) -->
+            <!-- VISTA: CREATE / EDIT -->
             @elseif($view == 'create' || $view == 'edit')
                 <div class="p-0">
-                    <!-- TABS PARA DIVIDIR LA CARGA DE INFORMACIÓN -->
                     <div class="flex border-b border-gray-100 bg-gray-50/50">
-                        <button @click="tab = 1" :class="tab === 1 ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-gray-400 hover:text-gray-600'" class="px-8 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all">
+                        <button type="button" wire:click="setTab(1)" :class="tab === 1 ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-gray-400'" class="px-8 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all">
                             1. Perfil del Docente
                         </button>
-                        <button @click="tab = 2" :class="tab === 2 ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-gray-400 hover:text-gray-600'" class="px-8 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all">
+                        <button type="button" wire:click="setTab(2)" :class="tab === 2 ? 'border-indigo-600 text-indigo-600 bg-white' : 'border-transparent text-gray-400'" class="px-8 py-4 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all">
                             2. Asignación Académica
-                            <span class="ml-2 bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full text-[9px]">{{ count($selectedCursos) }}</span>
                         </button>
                     </div>
 
@@ -133,72 +124,71 @@
                         <!-- TAB 1: DATOS PERSONALES -->
                         <div x-show="tab === 1" x-transition class="space-y-8">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <!-- Columna Izquierda: Cuenta -->
                                 <div class="space-y-6">
-                                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest border-b pb-2">Datos de Acceso</h4>
+                                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest border-b pb-2">Datos de Identidad</h4>
                                     <div class="space-y-4">
                                         <div class="space-y-1">
                                             <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Nombre Completo</label>
                                             <input wire:model="name" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none text-sm">
                                             @error('name') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
                                         </div>
-                                        <div class="space-y-1">
-                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Email Académico</label>
-                                            <input wire:model="email" type="email" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none text-sm">
-                                            @error('email') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
-                                        </div>
-                                        <div class="space-y-1">
-                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Contraseña {{ $view == 'edit' ? '(Dejar vacío para mantener)' : '' }}</label>
-                                            <input wire:model="password" type="password" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none text-sm" placeholder="••••••••">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="space-y-1">
+                                                <label class="text-[10px] font-black text-gray-500 uppercase ml-1">DNI (8 dígitos)</label>
+                                                <input wire:model="dni" type="text" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm font-mono">
+                                                @error('dni') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
+                                            </div>
+                                            <div class="space-y-1">
+                                                <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Teléfono (Inicia 9)</label>
+                                                <input wire:model="telefono" type="text" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm font-mono">
+                                                @error('telefono') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Columna Derecha: Profesional -->
                                 <div class="space-y-6">
                                     <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest border-b pb-2">Información Profesional</h4>
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-4">
                                         <div class="space-y-1">
-                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">DNI</label>
-                                            <input wire:model="dni" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm font-mono">
+                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Especialidad</label>
+                                            <input wire:model="especialidad" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
+                                            @error('especialidad') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
                                         </div>
                                         <div class="space-y-1">
-                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Teléfono</label>
-                                            <input wire:model="telefono" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
+                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Fecha Contratación</label>
+                                            <input wire:model="fecha_contratacion" type="date" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
+                                            @error('fecha_contratacion') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
                                         </div>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Especialidad</label>
-                                        <input wire:model="especialidad" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
-                                    </div>
-                                    <div class="space-y-1">
-                                        <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Fecha Contratación</label>
-                                        <input wire:model="fecha_contratacion" type="date" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex justify-end">
-                                <button type="button" @click="tab = 2" class="px-8 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all">Siguiente Paso: Carga Académica &rarr;</button>
+                            <div class="flex justify-end pt-4">
+                                <button type="button" wire:click="goToStepTwo" class="px-8 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-all">Siguiente Paso: Carga Académica &rarr;</button>
                             </div>
                         </div>
 
-                        <!-- TAB 2: CARGA ACADÉMICA (ESTRUCTURA DE ACORDEÓN PARA MENOR CARGA COGNITIVA) -->
+                        <!-- TAB 2: CARGA ACADÉMICA -->
                         <div x-show="tab === 2" x-transition class="space-y-6">
-                            <div class="flex justify-between items-center mb-4">
-                                <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest">Selección de Ciclos y Cursos</h4>
-                                <span class="text-[10px] bg-amber-50 text-amber-600 px-3 py-1 rounded-full font-bold italic">Selecciona al menos un curso para continuar</span>
+                            <div class="bg-indigo-600 p-4 rounded-xl shadow-lg mb-6 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="bg-white/20 p-2 rounded-lg mr-4">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-indigo-100 uppercase tracking-widest">Asignando cursos para:</p>
+                                        <p class="text-sm font-black text-white uppercase">{{ $name ?: 'Nuevo Docente' }}</p>
+                                    </div>
+                                </div>
                             </div>
+
+                            @error('selectedCursos') <p class="text-red-500 text-[10px] font-bold mb-4">{{ $message }}</p> @enderror
 
                             <div class="space-y-4">
                                 @foreach($allCursosGrouped as $cicloNombre => $areas)
                                     <div x-data="{ open: false }" class="border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
                                         <button type="button" @click="open = !open" class="w-full flex justify-between items-center p-5 bg-white hover:bg-gray-50 transition-colors">
-                                            <div class="flex items-center">
-                                                <div class="h-8 w-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mr-4">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                                </div>
-                                                <span class="text-sm font-black text-gray-700 uppercase tracking-tight">{{ $cicloNombre }}</span>
-                                            </div>
+                                            <span class="text-sm font-black text-gray-700 uppercase tracking-tight">{{ $cicloNombre }}</span>
                                             <svg class="w-5 h-5 text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
                                         </button>
 
@@ -222,7 +212,7 @@
                             </div>
 
                             <div class="flex justify-between pt-6 border-t">
-                                <button type="button" @click="tab = 1" class="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">&larr; Volver al perfil</button>
+                                <button type="button" wire:click="setTab(1)" class="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">&larr; Volver al perfil</button>
                                 <div class="flex gap-4">
                                     <button type="button" wire:click="cancel" class="px-8 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descartar</button>
                                     <button type="submit" class="px-12 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 flex items-center active:scale-95 transition-all">
@@ -235,9 +225,8 @@
                     </form>
                 </div>
 
-            <!-- VISTA: SHOW (CONSERVADA SEGÚN SOLICITUD) -->
+            <!-- VISTA: SHOW -->
             @elseif($view == 'show')
-                <!-- ... mismo código de 'show' anterior ... -->
                 <div class="p-8">
                     <div class="flex flex-col md:flex-row justify-between border-b border-gray-100 pb-8 mb-8 gap-6">
                         <div class="flex items-center space-x-6">
@@ -248,7 +237,7 @@
                                 <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Perfil Profesional</span>
                                 <h3 class="text-3xl font-black text-gray-800 leading-none">{{ $selectedDocente->user->name }}</h3>
                                 <p class="text-gray-400 font-bold mt-2 flex items-center text-sm">
-                                    {{ $selectedDocente->user->email }}
+                                    DNI: {{ $selectedDocente->dni }}
                                 </p>
                             </div>
                         </div>
@@ -281,7 +270,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE ELIMINACIÓN (CONSERVADO) -->
+    <!-- MODAL DE ELIMINACIÓN -->
     @if($docenteIdBeingDeleted)
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" wire:click="cancelDelete"></div>

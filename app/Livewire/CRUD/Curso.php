@@ -17,14 +17,32 @@ class Curso extends Component
     public $selectedCurso;
     public $search = '';
 
-    // NUEVO: Propiedad para rastrear el curso a eliminar
+    // Propiedad para rastrear el curso a eliminar
     public $cursoIdBeingDeleted = null;
 
+    // Reglas de validación
     protected $rules = [
         'nombre' => 'required|min:3|string',
         'area_id' => 'required|exists:areas,id',
         'ciclo_id' => 'required|exists:ciclos,id',
     ];
+
+    // MENSAJES PERSONALIZADOS EN ESPAÑOL
+    protected $messages = [
+        'nombre.required' => 'El nombre del curso es obligatorio.',
+        'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+        'nombre.string' => 'El nombre debe ser un texto válido.',
+        'area_id.required' => 'Debe seleccionar un área.',
+        'area_id.exists' => 'El área seleccionada no es válida.',
+        'ciclo_id.required' => 'Debe seleccionar un ciclo.',
+        'ciclo_id.exists' => 'El ciclo seleccionado no es válido.',
+    ];
+
+    // Resetear paginación cuando se busca
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
 
     public function updatedAreaId($value)
     {
@@ -77,7 +95,6 @@ class Curso extends Component
     }
 
     private function resetInputFields() {
-        // ACTUALIZADO: Resetear también el ID de eliminación
         $this->reset(['nombre', 'area_id', 'ciclo_id', 'curso_id', 'selectedCurso', 'cursoIdBeingDeleted']);
         $this->resetValidation();
     }
@@ -97,25 +114,22 @@ class Curso extends Component
         $this->volver();
     }
 
-    // NUEVO: Método para abrir el modal de confirmación
     public function confirmDelete($id)
     {
         $this->cursoIdBeingDeleted = $id;
     }
 
-    // NUEVO: Método para cerrar el modal sin hacer nada
     public function cancelDelete()
     {
         $this->cursoIdBeingDeleted = null;
     }
 
-    // ACTUALIZADO: Ahora no recibe $id, usa la propiedad del componente
     public function delete()
     {
         if ($this->cursoIdBeingDeleted) {
             CursoModel::find($this->cursoIdBeingDeleted)->delete();
-            session()->flash('message', 'Curso eliminado.');
-            $this->cursoIdBeingDeleted = null; // Cerrar modal tras eliminar
+            session()->flash('message', 'Curso eliminado correctamente.');
+            $this->cursoIdBeingDeleted = null;
         }
     }
 }

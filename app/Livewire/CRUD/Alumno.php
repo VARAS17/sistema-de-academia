@@ -16,8 +16,7 @@ class Alumno extends Component
 
     public string $view = 'index';
     
-    // Propiedades del formulario (Solo identidad)
-    public $alumno_id = null; // Este es el user_id
+    public $alumno_id = null; 
     public ?string $name = null;
     public ?string $email = null;
     public ?string $password = null;
@@ -26,25 +25,50 @@ class Alumno extends Component
     
     public string $search = '';
     public $selectedAlumno;
-
-    // Control del modal de eliminación
     public $alumnoIdBeingDeleted = null;
 
+    // 1. REGLAS DE VALIDACIÓN ACTUALIZADAS
     protected function rules(): array
     {
         return [
             'name'      => 'required|string|min:3|max:255',
             'email'     => ['required', 'email', Rule::unique('users', 'email')->ignore($this->alumno_id)],
             'password'  => $this->view === 'create' ? 'required|min:6' : 'nullable|min:6',
-            'dni'       => ['required', 'digits:8', Rule::unique('alumnos', 'dni')->ignore($this->alumno_id, 'user_id')],
-            'telefono'  => 'nullable|digits_between:7,15',
+            'dni'       => [
+                'required', 
+                'digits:8', // Exactamente 8 dígitos
+                Rule::unique('alumnos', 'dni')->ignore($this->alumno_id, 'user_id')
+            ],
+            'telefono'  => [
+                'nullable', 
+                'digits:9',    // Debe tener 9 dígitos
+                'regex:/^9/'   // Debe empezar por 9
+            ],
         ];
     }
 
+    // 2. MENSAJES PERSONALIZADOS EN ESPAÑOL
+    protected $messages = [
+        'name.required'     => ' El nombre es obligatorio.',
+        'name.min'          => ' El nombre debe tener al menos 3 caracteres.',
+        'email.required'    => ' El correo electrónico es obligatorio.',
+        'email.email'       => ' El formato del correo no es válido.',
+        'email.unique'      => ' Este correo ya está registrado.',
+        'password.required' => ' La contraseña es obligatoria.',
+        'password.min'      => ' La contraseña debe tener al menos 6 caracteres.',
+        'dni.required'      => ' El DNI es obligatorio.',
+        'dni.digits'        => ' El DNI debe tener exactamente 8 dígitos.',
+        'dni.unique'        => ' Este DNI ya está registrado.',
+        'telefono.digits'   => ' El teléfono debe tener 9 dígitos.',
+        'telefono.regex'    => ' El teléfono debe empezar con el número 9.',
+    ];
+
+    // El resto de tus métodos (render, show, create, store, etc.) se mantienen igual...
+    
     public function render()
     {
         return view('livewire.c-r-u-d.alumno', [
-            'alumnos'  => AlumnoModel::with(['user', 'matriculas.ciclo']) // Cargamos matrículas para vista informativa
+            'alumnos'  => AlumnoModel::with(['user', 'matriculas.ciclo'])
                 ->where(function($query) {
                     $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
                           ->orWhere('dni', 'like', "%{$this->search}%");
@@ -54,10 +78,7 @@ class Alumno extends Component
         ]);
     }
 
-    // --- NAVEGACIÓN ---
-
     public function show($id) {
-        // Obtenemos el alumno con sus relaciones académicas solo para visualización
         $this->selectedAlumno = AlumnoModel::with(['user', 'matriculas.ciclo', 'matriculas.pagos'])->findOrFail($id);
         $this->view = 'show';
     }
@@ -84,13 +105,10 @@ class Alumno extends Component
         $this->view = 'index'; 
     }
 
-    // --- ACCIONES DE PERSISTENCIA (SÓLO IDENTIDAD) ---
-
     public function store() {
         $this->validate();
 
         DB::transaction(function () {
-            // 1. Crear el usuario de acceso
             $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -99,22 +117,20 @@ class Alumno extends Component
 
             $user->assignRole('alumno');
 
-            // 2. Crear la ficha del alumno
             AlumnoModel::create([
                 'user_id' => $user->id,
                 'dni' => $this->dni,
                 'telefono' => $this->telefono ?: null,
-                // Nota: ciclo_id y carrera_id ya no se guardan aquí, se hacen en Matrícula
             ]);
         });
 
-        session()->flash('message', 'Alumno creado correctamente. Ahora puede proceder a la matrícula.');
+        session()->flash('message', 'Alumno creado correctamente.');
         $this->cancel();
     }
 
     public function update() {
         $this->validate();
-        $alumno = AlumnoModel::findOrFail($this->alumno_id);
+        $alumno = AlumnoModel::where('user_id', $this->alumno_id)->firstOrFail();
         
         DB::transaction(function () use ($alumno) {
             $alumno->user->update([
@@ -133,8 +149,6 @@ class Alumno extends Component
         $this->cancel();
     }
 
-    // --- ELIMINACIÓN ---
-
     public function confirmDelete($id) {
         $this->alumnoIdBeingDeleted = $id;
     }
@@ -146,19 +160,16 @@ class Alumno extends Component
                 DB::transaction(function () {
                     $alumno = AlumnoModel::find($this->alumnoIdBeingDeleted);
                     if ($alumno) {
-                        // Borramos cascada manual si no está configurada en BD
                         DB::table('pagos_matriculas')
                             ->whereIn('matricula_id', function($query) {
                                 $query->select('id')->from('matriculas')->where('alumno_id', $this->alumnoIdBeingDeleted);
                             })->delete();
 
                         DB::table('matriculas')->where('alumno_id', $this->alumnoIdBeingDeleted)->delete();
-                        
-                        // Al borrar el User, si tienes onDelete('cascade'), el Alumno se borra solo.
-                        User::where('id', $this->alumnoIdBeingDeleted)->delete();
+                        User::where('id', $alumno->user_id)->delete();
                     }
                 });
-                session()->flash('message', 'Registro eliminado por completo.');
+                session()->flash('message', 'Registro eliminado.');
             } catch (\Exception $e) {
                 session()->flash('error', 'Error al eliminar: ' . $e->getMessage());
             }

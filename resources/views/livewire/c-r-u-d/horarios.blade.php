@@ -1,4 +1,4 @@
-<div class="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
+<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative">
     
     <!-- 1. SECCIÓN DE BREADCRUMBS -->
     <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">

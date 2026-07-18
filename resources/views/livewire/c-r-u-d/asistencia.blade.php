@@ -1,4 +1,4 @@
-<div class="py-8 bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
+<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- 1. SISTEMA DE BREADCRUMBS CORREGIDO -->
