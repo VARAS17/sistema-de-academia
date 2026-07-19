@@ -1,4 +1,5 @@
-<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative"{ tab: @entangle('tab') }">
+<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
+    
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         
         <!-- 1. BREADCRUMBS (Consistente) -->
@@ -55,9 +56,14 @@
                                    placeholder="Buscar docente o DNI...">
                         </div>
                         
-                        <button wire:click="create" class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center justify-center active:scale-95">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            Nuevo Docente
+                        <button wire:click="create"
+                            class="h-14 px-6 flex items-centero px-6 py-2.5 bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg flex items-center justify-center active:scale-95">
+
+                            <img src="{{ asset('meta-register/docente.png') }}"
+                                alt="Registrar Docente"
+                                class="w-14 h-14 mr-2 object-contain">
+
+                            Registrar Docente
                         </button>
                     </div>
 
@@ -92,9 +98,29 @@
                                         <td class="px-6 py-4 font-mono text-xs text-gray-500">{{ $docente->dni }}</td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex justify-center space-x-1">
-                                                <button wire:click="show({{ $docente->user_id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
-                                                <button wire:click="edit({{ $docente->user_id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
-                                                <button wire:click="confirmDelete({{ $docente->user_id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                                <button wire:click="show({{ $docente->user_id }})"
+                                                    class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
+                                                    title="Ver Detalles">
+                                                    <img src="{{ asset('meta-ver/docente.jpeg') }}"
+                                                        alt="Ver"
+                                                        class="w-12 h-12 object-contain">
+                                                </button>
+
+                                                <button wire:click="edit({{ $docente->user_id }})"
+                                                    class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                    title="Editar">
+                                                    <img src="{{ asset('meta-editar/docente.jpeg') }}"
+                                                        alt="Editar"
+                                                        class="w-12 h-12 object-contain">
+                                                </button>
+
+                                                <button wire:click="confirmDelete({{ $docente->user_id }})"
+                                                    class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Eliminar">
+                                                    <img src="{{ asset('meta-eliminar/docente.jpeg') }}"
+                                                        alt="Eliminar"
+                                                        class="w-12 h-12 object-contain">
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -217,7 +243,7 @@
                                     <button type="button" wire:click="cancel" class="px-8 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descartar</button>
                                     <button type="submit" class="px-12 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 flex items-center active:scale-95 transition-all">
                                         <span wire:loading class="mr-3 animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                                        {{ $docente_id ? 'Actualizar Docente' : 'Finalizar Registro' }}
+                                        {{ $user_id ? 'Actualizar Docente' : 'Finalizar Registro' }}
                                     </button>
                                 </div>
                             </div>

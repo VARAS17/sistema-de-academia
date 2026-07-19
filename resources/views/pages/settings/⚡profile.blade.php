@@ -17,35 +17,27 @@ new #[Title('Profile settings')] class extends Component {
     public string $name = '';
     public string $email = '';
     
-    // Datos de contacto/identidad
     public string $telefono = '';
     public string $dni = ''; 
 
-    // Datos Académicos (Solo lectura)
     public string $area_nombre = '';
     public string $ciclo_nombre = '';
     public string $carrera_nombre = '';
 
-    // Seguridad
     public string $password = '';
     public string $password_confirmation = '';
 
-    /**
-     * Mount the component.
-     */
     public function mount(): void
     {
         $user = Auth::user();
         $this->name = $user->name;
         $this->email = $user->email;
 
-        // Si es alumno, cargamos datos de su tabla 'alumno' y su 'matricula'
         if ($user->hasRole('alumno') && $user->alumno) {
             $alumno = $user->alumno;
             $this->telefono = $alumno->telefono ?? '';
             $this->dni = $alumno->dni ?? '';
 
-            // Obtenemos la matrícula activa más reciente
             $matricula = $alumno->matriculas()
                 ->with(['ciclo.area', 'carrera'])
                 ->where('estado', 'Activa')
@@ -61,24 +53,45 @@ new #[Title('Profile settings')] class extends Component {
     }
 
     /**
-     * Update the profile information.
+     * Validación en tiempo real para el teléfono
      */
+    public function updatedTelefono()
+    {
+        $this->validateOnly('telefono', [
+            'telefono' => 'nullable|regex:/^9[0-9]{8}$/',
+        ], [
+            'telefono.regex' => 'El número debe empezar con 9 y tener 9 dígitos.',
+        ]);
+    }
+
     public function updateProfileInformation(): void
     {
         $user = Auth::user();
         $isAlumno = $user->hasRole('alumno');
 
+        // Reglas de validación personalizadas
         $rules = [
             'password' => 'nullable|min:8|confirmed',
         ];
 
         if ($isAlumno) {
-            $rules['telefono'] = 'nullable|digits_between:7,15';
+            $rules['telefono'] = 'nullable|regex:/^9[0-9]{8}$/';
         } else {
             $rules = array_merge($rules, $this->profileRules($user->id));
         }
 
-        $this->validate($rules);
+        // Mensajes en español
+        $messages = [
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'telefono.regex' => 'El número de teléfono debe empezar con 9 y tener exactamente 9 dígitos.',
+            'name.required' => 'El nombre es obligatorio.',
+            'email.required' => 'El correo es obligatorio.',
+            'email.email' => 'El formato del correo no es válido.',
+            'email.unique' => 'Este correo ya está en uso.',
+        ];
+
+        $this->validate($rules, $messages);
 
         // Actualizar User
         if (! $isAlumno) {
@@ -99,7 +112,7 @@ new #[Title('Profile settings')] class extends Component {
         }
 
         $this->reset(['password', 'password_confirmation']);
-        Flux::toast(variant: 'success', text: __('Profile updated.'));
+        Flux::toast(variant: 'success', text: __('Perfil actualizado correctamente.'));
     }
 
     #[Computed]
@@ -135,14 +148,14 @@ new #[Title('Profile settings')] class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading class="sr-only">{{ __('Profile settings') }}</flux:heading>
+    <flux:heading class="sr-only">{{ __('Ajustes de perfil') }}</flux:heading>
 
     <x-pages::settings.layout>
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-8">
             
             <!-- Sección: Datos Personales -->
             <div class="space-y-6">
-                <flux:heading level="2" size="lg">{{ __('Informacion Personal') }}</flux:heading>
+                <flux:heading level="2" size="lg">{{ __('Información Personal') }}</flux:heading>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <flux:input 
@@ -154,14 +167,19 @@ new #[Title('Profile settings')] class extends Component {
 
                     <flux:input 
                         wire:model="email" 
-                        :label="__('Correo Electronico')" 
+                        :label="__('Correo Electrónico')" 
                         :readonly="$this->isAlumno"
                         :variant="$this->isAlumno ? 'filled' : null"
                     />
 
                     @if($this->isAlumno)
                         <flux:input wire:model="dni" :label="__('DNI')" readonly variant="filled" />
-                        <flux:input wire:model="telefono" :label="__('Numero de Telefono')" placeholder="Ej: 987654321" />
+                        <flux:input 
+                            wire:model.live="telefono" 
+                            :label="__('Número de Teléfono')" 
+                            placeholder="9XXXXXXXX"
+                            maxlength="9" 
+                        />
                     @endif
                 </div>
             </div>
@@ -169,10 +187,10 @@ new #[Title('Profile settings')] class extends Component {
             <!-- Sección: Información Académica (Solo para Alumnos) -->
             @if ($this->isAlumno)
                 <div class="space-y-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <flux:heading level="2" size="lg">{{ __('Informacion Academica') }}</flux:heading>
+                    <flux:heading level="2" size="lg">{{ __('Información Académica') }}</flux:heading>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <flux:input wire:model="area_nombre" :label="__('Area')" readonly variant="filled" />
+                        <flux:input wire:model="area_nombre" :label="__('Área')" readonly variant="filled" />
                         <flux:input wire:model="ciclo_nombre" :label="__('Ciclo')" readonly variant="filled" />
                         <flux:input wire:model="carrera_nombre" :label="__('Carrera')" readonly variant="filled" />
                     </div>
@@ -182,24 +200,34 @@ new #[Title('Profile settings')] class extends Component {
             <!-- Sección: Seguridad -->
             <div class="space-y-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <flux:heading level="2" size="lg">{{ __('Seguridad') }}</flux:heading>
-                <flux:subheading>{{ __('Actualiza tu contraseña para mantener tu cuenta segura.') }}</flux:subheading>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <flux:input wire:model="password" :label="__('Nueva Contraseña')" type="password" />
-                    <flux:input wire:model="password_confirmation" :label="__('Confirmar Contraseña')" type="password" />
+                    <flux:input 
+                        wire:model="password" 
+                        :label="__('Nueva Contraseña')" 
+                        type="password" 
+                        placeholder="••••••••"
+                        description="Dejar en blanco si no desea cambiar"
+                    />
+                    <flux:input 
+                        wire:model="password_confirmation" 
+                        :label="__('Repita la contraseña para confirmar')" 
+                        type="password" 
+                        placeholder="••••••••"
+                    />
                 </div>
             </div>
 
             @if ($this->hasUnverifiedEmail && ! $this->isAlumno)
                 <div class="mt-4">
                     <flux:text>
-                        {{ __('Your email address is unverified.') }}
+                        {{ __('Tu dirección de correo no está verificada.') }}
                         <flux:link class="cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                            {{ __('Click here to re-send.') }}
+                            {{ __('Haz clic aquí para reenviar el enlace.') }}
                         </flux:link>
                     </flux:text>
                     @if (session('status') === 'verification-link-sent')
-                        <flux:text class="mt-2 text-green-600">{{ __('Verification link sent.') }}</flux:text>
+                        <flux:text class="mt-2 text-green-600">{{ __('Enlace de verificación enviado.') }}</flux:text>
                     @endif
                 </div>
             @endif

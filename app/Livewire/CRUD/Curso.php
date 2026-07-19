@@ -17,26 +17,43 @@ class Curso extends Component
     public $selectedCurso;
     public $search = '';
 
-    // Propiedad para rastrear el curso a eliminar
     public $cursoIdBeingDeleted = null;
 
-    // Reglas de validación
-    protected $rules = [
-        'nombre' => 'required|min:3|string',
-        'area_id' => 'required|exists:areas,id',
-        'ciclo_id' => 'required|exists:ciclos,id',
-    ];
+    // REGLAS DE VALIDACIÓN ACTUALIZADAS
+    protected function rules()
+    {
+        return [
+            'nombre' => [
+                'required',
+                'min:3',
+                'string',
+                // Regex: permite letras (A-Z), espacios (\s), ñ, y vocales con tilde
+                'regex:/^[a-zA-ZñÑáéíóúÁÉÍÓÚ\s]+$/u'
+            ],
+            'area_id' => 'required|exists:areas,id',
+            'ciclo_id' => 'required|exists:ciclos,id',
+        ];
+    }
 
     // MENSAJES PERSONALIZADOS EN ESPAÑOL
     protected $messages = [
         'nombre.required' => 'El nombre del curso es obligatorio.',
         'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
         'nombre.string' => 'El nombre debe ser un texto válido.',
+        'nombre.regex' => 'El nombre solo puede contener letras y espacios (sin números ni caracteres especiales).',
         'area_id.required' => 'Debe seleccionar un área.',
         'area_id.exists' => 'El área seleccionada no es válida.',
         'ciclo_id.required' => 'Debe seleccionar un ciclo.',
         'ciclo_id.exists' => 'El ciclo seleccionado no es válido.',
     ];
+
+    /**
+     * Validación en tiempo real para el nombre
+     */
+    public function updatedNombre()
+    {
+        $this->validateOnly('nombre');
+    }
 
     // Resetear paginación cuando se busca
     public function updatingSearch()

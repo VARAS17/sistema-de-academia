@@ -38,7 +38,7 @@ class Docente extends Component
     {
         return [
             'name' => 'required|string|min:3',
-            'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->docente_id ?? 'NULL'),
+            'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->user_id ?? 'NULL') . ',user_id',
             'telefono' => 'required|regex:/^9[0-9]{8}$/', // Empieza con 9 y tiene 9 dígitos
             'especialidad' => 'required|string',
             'fecha_contratacion' => 'required|date',
@@ -70,7 +70,7 @@ class Docente extends Component
     {
         $this->validate([
             'name' => 'required|string|min:3',
-            'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->docente_id ?? 'NULL'),
+            'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->user_id ?? 'NULL') . ',user_id',
             'telefono' => 'required|regex:/^9[0-9]{8}$/',
             'especialidad' => 'required|string',
             'fecha_contratacion' => 'required|date',
@@ -127,10 +127,9 @@ class Docente extends Component
         if (!$id) return;
 
         $this->resetValidation();
-        $docente = DocenteModel::with('user', 'cursos')->findOrFail($id);
-        
-        $this->docente_id = $id;
-        $this->user_id = $docente->user_id; 
+        $docente = DocenteModel::with('user', 'cursos')->findOrFail($id); // $id aquí ya es el user_id, y es la PK de docentes, así que esto funciona bien
+
+        $this->user_id = $docente->user_id;
         $this->name = $docente->user->name;
         $this->dni = $docente->dni;
         $this->telefono = $docente->telefono;
@@ -186,7 +185,7 @@ class Docente extends Component
                 $docente->cursos()->sync($this->selectedCursos);
             });
 
-            session()->flash('message', $this->docente_id ? 'Docente actualizado correctamente.' : 'Docente registrado con éxito.');
+            session()->flash('message', $this->user_id ? 'Docente actualizado correctamente.' : 'Docente registrado con éxito.');
             $this->showIndex();
 
         } catch (\Exception $e) {
@@ -252,7 +251,7 @@ class Docente extends Component
     {
         $this->reset([
             'name', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 
-            'selectedCursos', 'docente_id', 'user_id', 'selectedDocente', 
+            'selectedCursos', 'user_id',  'selectedDocente', 
             'docenteIdBeingDeleted', 'tab'
         ]);
         $this->resetValidation();

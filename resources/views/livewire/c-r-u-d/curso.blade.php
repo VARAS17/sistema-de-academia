@@ -56,9 +56,13 @@
                                    placeholder="Buscar curso...">
                         </div>
                         
-                        <button wire:click="create" 
-                                class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center justify-center active:scale-95">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <button wire:click="create"
+                            class="h-14 px-6 flex items-centero px-6 py-2.5 bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg flex items-center justify-center active:scale-95">
+
+                            <img src="{{ asset('meta-register/curso.png') }}"
+                                alt="Registrar Curso"
+                                class="w-17 h-17 mr-2 object-contain">
+
                             Registrar Curso
                         </button>
                     </div>
@@ -91,15 +95,28 @@
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex justify-center space-x-1">
-                                                <button wire:click="show({{ $curso->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors" title="Ver Detalles">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                <button wire:click="show({{ $curso->id }})"
+                                                    class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
+                                                    title="Ver Detalles">
+                                                    <img src="{{ asset('meta-ver/curso.jpeg') }}"
+                                                        alt="Ver"
+                                                        class="w-12 h-12 object-contain">
                                                 </button>
-                                                <button wire:click="edit({{ $curso->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+
+                                                <button wire:click="edit({{ $curso->id }})"
+                                                    class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                    title="Editar">
+                                                    <img src="{{ asset('meta-editar/curso.jpeg') }}"
+                                                        alt="Editar"
+                                                        class="w-12 h-12 object-contain">
                                                 </button>
-                                                <!-- ACTUALIZADO: Sin mensaje de consola -->
-                                                <button wire:click="confirmDelete({{ $curso->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+
+                                                <button wire:click="confirmDelete({{ $curso->id }})"
+                                                    class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Eliminar">
+                                                    <img src="{{ asset('meta-eliminar/curso.jpeg') }}"
+                                                        alt="Eliminar"
+                                                        class="w-12 h-12 object-contain">
                                                 </button>
                                             </div>
                                         </td>
@@ -171,12 +188,21 @@
                     </div>
 
                     <form wire:submit.prevent="store" class="space-y-6">
-                        <div class="group">
-                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Nombre Completo del Curso</label>
-                            <input wire:model="nombre" type="text" 
-                                   class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none @error('nombre') border-red-200 bg-red-50 @enderror" 
-                                   placeholder="Ej: Análisis Matemático I">
-                            @error('nombre') <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tight">{{ $message }}</p> @enderror
+                        <div class="group" x-data>
+                            <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                                Nombre Completo del Curso
+                            </label>
+                            <input 
+                                wire:model="nombre" 
+                                type="text" 
+                                {{-- ESTA LÍNEA HACE EL BLOQUEO --}}
+                                x-on:input="$el.value = $el.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '')"
+                                class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 focus:bg-white transition-all outline-none @error('nombre') border-red-200 bg-red-50 @enderror" 
+                                placeholder="Ej: Análisis Matemático I">
+                            
+                            @error('nombre') 
+                                <p class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1 tracking-tight">{{ $message }}</p> 
+                            @enderror
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
