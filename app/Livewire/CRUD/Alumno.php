@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
+use App\Models\ResultadoSimulacro;
+use App\Models\Asistencia;
+use App\Models\Matricula;
+use App\Models\PagoMatricula;
 
 class Alumno extends Component
 {
@@ -153,29 +157,50 @@ class Alumno extends Component
         $this->alumnoIdBeingDeleted = $id;
     }
 
-    public function delete() 
-    {
-        if ($this->alumnoIdBeingDeleted) {
-            try {
-                DB::transaction(function () {
-                    $alumno = AlumnoModel::find($this->alumnoIdBeingDeleted);
-                    if ($alumno) {
-                        DB::table('pagos_matriculas')
-                            ->whereIn('matricula_id', function($query) {
-                                $query->select('id')->from('matriculas')->where('alumno_id', $this->alumnoIdBeingDeleted);
-                            })->delete();
+public function delete() 
+{
+    if (!$this->alumnoIdBeingDeleted) return;
 
-                        DB::table('matriculas')->where('alumno_id', $this->alumnoIdBeingDeleted)->delete();
-                        User::where('id', $alumno->user_id)->delete();
-                    }
-                });
-                session()->flash('message', 'Registro eliminado.');
-            } catch (\Exception $e) {
-                session()->flash('error', 'Error al eliminar: ' . $e->getMessage());
-            }
-            $this->alumnoIdBeingDeleted = null;
-        }
+    try {
+        $id = $this->alumnoIdBeingDeleted;
+
+        DB::transaction(function () use ($id) {
+            // Detectamos nombres de tablas dinámicamente desde los modelos
+            $tablaResultados = (new ResultadoSimulacro())->getTable();
+            $tablaAsistencias = (new Asistencia())->getTable();
+            $tablaMatriculas = (new Matricula())->getTable();
+            $tablaPagos = (new PagoMatricula())->getTable();
+
+            // 1. Borrar resultados de simulacros
+            DB::table($tablaResultados)->where('alumno_id', $id)->delete();
+
+            // 2. Borrar asistencias
+            DB::table($tablaAsistencias)->where('alumno_id', $id)->delete();
+
+            // 3. Borrar pagos (vía matrículas)
+            $matriculaIds = DB::table($tablaMatriculas)->where('alumno_id', $id)->pluck('id');
+            DB::table($tablaPagos)->whereIn('matricula_id', $matriculaIds)->delete();
+
+            // 4. Borrar matrículas
+            DB::table($tablaMatriculas)->where('alumno_id', $id)->delete();
+
+            // 5. Borrar el registro del alumno (en la tabla 'alumnos')
+            DB::table('alumnos')->where('user_id', $id)->delete();
+
+            // 6. Finalmente borrar el usuario base
+            DB::table('users')->where('id', $id)->delete();
+        });
+
+        session()->flash('message', 'Estudiante y todo su historial eliminados con éxito.');
+        $this->view = 'index';
+        
+    } catch (\Exception $e) {
+        // Si una tabla no existe, la saltamos o mostramos el error específico
+        session()->flash('error', 'Error al borrar: ' . $e->getMessage());
     }
+
+    $this->alumnoIdBeingDeleted = null;
+}
 
     private function resetForm() { 
         $this->reset([

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Alumno extends Model
 {
@@ -47,4 +48,13 @@ class Alumno extends Model
     public function asistencias(): HasMany { 
         return $this->hasMany(Asistencia::class, 'alumno_id', 'user_id'); 
     }
+
+    public function matriculaActiva(): HasOne
+{
+    return $this->hasOne(Matricula::class, 'alumno_id', 'user_id')
+        ->latestOfMany(); // toma la más reciente por created_at
+        // Si 'estado' tiene un valor como 'activa', mejor usar:
+        // ->where('estado', 'activa')->latestOfMany();
+}
+    
 }

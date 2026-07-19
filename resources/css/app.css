@@ -75,21 +75,10 @@ html.font-2xl { font-size: 137.5%; }  /* ~22px */
    ACCESIBILIDAD: Modo de color para daltonismo
    Usa los filtros SVG definidos en el <body> del layout
    ========================================================== */
-html.color-protanopia {
-    filter: url(#protanopia-filter);
-}
-
-html.color-deuteranopia {
-    filter: url(#deuteranopia-filter);
-}
-
-html.color-tritanopia {
-    filter: url(#tritanopia-filter);
-}
-
-html.color-achromatopsia {
-    filter: url(#achromatopsia-filter);
-}
+html.color-protanopia { filter: url(#protanopia); }
+html.color-deuteranopia { filter: url(#deuteranopia); }
+html.color-tritanopia { filter: url(#tritanopia); }
+html.color-achromatopsia { filter: url(#achromatopsia); }
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */

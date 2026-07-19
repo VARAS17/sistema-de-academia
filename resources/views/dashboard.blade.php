@@ -2,7 +2,7 @@
     <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
         
         @if($data['role'] === 'sin_perfil')
-            {{-- CASO: Usuario sin perfil de alumno (probablemente un usuario recién creado) --}}
+            {{-- CASO: Usuario sin perfil de alumno --}}
             <div class="flex flex-col items-center justify-center h-64 bg-white dark:bg-neutral-800 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700">
                 <svg class="w-12 h-12 text-neutral-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -14,7 +14,7 @@
             </div>
         @else
 
-            {{-- --- FILA DE WIDGETS SUPERIORES (Estadísticas Rápidas) --- --}}
+            {{-- --- FILA DE WIDGETS SUPERIORES --- --}}
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                 
                 @if($data['role'] === 'admin')
@@ -22,7 +22,7 @@
                     <div class="relative overflow-hidden rounded-xl border border-neutral-200 p-6 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Total Alumnos</p>
+                                <p class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Total de Estudiantes</p>
                                 <p class="mt-2 text-4xl font-black text-neutral-900 dark:text-neutral-100">{{ $data['total_alumnos'] }}</p>
                             </div>
                             <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -48,7 +48,7 @@
                     <!-- ALUMNO: Carrera y Asistencia -->
                     <div class="relative overflow-hidden rounded-xl border border-neutral-200 p-6 dark:border-neutral-700 bg-indigo-600 shadow-lg text-white">
                         <p class="text-xs font-bold opacity-70 uppercase tracking-widest">Mi Carrera</p>
-                        <p class="mt-1 text-xl font-black truncate leading-tight">{{ $data['alumno']->carrera->nombre ?? 'Sin carrera' }}</p>
+                        <p class="mt-1 text-xl font-black truncate leading-tight">{{ $data['alumno']->matriculaActiva->carrera->nombre ?? 'Sin matrícula activa' }}</p>
                         <div class="mt-4">
                             <div class="flex justify-between text-[10px] mb-1 font-bold uppercase">
                                 <span>Asistencia General</span>
@@ -60,10 +60,16 @@
                         </div>
                     </div>
 
-                    <!-- ALUMNO: Próximo Pago -->
+                    <!-- ALUMNO: Estado de Pago -->
                     <div class="relative overflow-hidden rounded-xl border border-neutral-200 p-6 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
-                        <p class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Próxima Cuota</p>
-                        @if($data['proximo_pago'])
+                        <p class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Estado de Pago</p>
+                        
+                        @if(!$data['alumno']->matriculaActiva)
+                            <p class="mt-2 text-xl font-black text-neutral-400 flex items-center gap-2 uppercase italic leading-tight">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                Sin cuota programada
+                            </p>
+                        @elseif($data['proximo_pago'])
                             <p class="mt-2 text-3xl font-black text-rose-600 uppercase italic">S/ {{ number_format($data['proximo_pago']->monto, 2) }}</p>
                             <p class="mt-1 text-[10px] font-bold text-neutral-500 uppercase">Vence: {{ \Carbon\Carbon::parse($data['proximo_pago']->fecha_vencimiento)->format('d/m/Y') }}</p>
                         @else
@@ -87,7 +93,7 @@
                 @endif
             </div>
 
-            {{-- --- ÁREA PRINCIPAL (Tablas de Datos) --- --}}
+            {{-- --- ÁREA PRINCIPAL --- --}}
             <div class="relative flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm overflow-y-auto">
                 
                 @if($data['role'] === 'admin')
@@ -97,67 +103,84 @@
                             <h3 class="text-lg font-black text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">Rendimiento por Área Académica</h3>
                             <p class="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">Promedios generales basados en simulacros</p>
                         </div>
-                        <div class="h-1 w-16 bg-indigo-500 rounded-full"></div>
                     </div>
                     
+
+                    {{-- TABLA ADMIN: ALUMNOS POR CICLO --}}
+                    <div class="flex justify-between items-center mb-6 pt-6 border-t border-neutral-100 dark:border-neutral-700">
+                        <h3 class="text-lg font-black text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">Distribución de Estudiantes por Ciclo</h3>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead>
                                 <tr class="text-neutral-400 border-b border-neutral-100 dark:border-neutral-700">
-                                    <th class="pb-3 font-bold uppercase text-[10px]">Nombre del Área</th>
-                                    <th class="pb-3 font-bold uppercase text-[10px] text-center">N° Alumnos</th>
-                                    <th class="pb-3 font-bold uppercase text-[10px] text-center">Puntaje Máx.</th>
-                                    <th class="pb-3 font-bold uppercase text-[10px] text-right">Promedio General</th>
+                                    <th class="pb-3 font-bold uppercase text-[10px]">Nombre del Ciclo</th>
+                                    <th class="pb-3 font-bold uppercase text-[10px]">Área / Modalidad</th>
+                                    <th class="pb-3 font-bold uppercase text-[10px] text-right">Total Matriculados</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-50 dark:divide-neutral-700/50">
-                                @foreach($data['rendimiento_areas'] as $area)
+                                @foreach($data['alumnos_por_ciclo'] as $ciclo)
                                 <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors">
-                                    <td class="py-4">
-                                        <div class="font-bold text-neutral-800 dark:text-neutral-100">{{ $area->nombre }}</div>
-                                        <div class="text-[9px] text-indigo-500 font-bold uppercase">Sector Académico</div>
-                                    </td>
-                                    <td class="py-4 text-center">
-                                        <span class="bg-neutral-100 dark:bg-neutral-700 px-2.5 py-1 rounded-md font-bold text-xs">
-                                            {{ $area->total_alumnos }}
-                                        </span>
-                                    </td>
-                                    <td class="py-4 text-center font-bold text-emerald-600">
-                                        {{ number_format($area->puntaje_maximo, 2) ?? '0.00' }}
-                                    </td>
+                                    <td class="py-4 font-bold text-neutral-800 dark:text-neutral-100">{{ $ciclo->nombre }}</td>
+                                    <td class="py-4 font-bold text-[10px] uppercase text-neutral-500">{{ $ciclo->area_nombre ?? 'General' }}</td>
                                     <td class="py-4 text-right">
-                                        <div class="font-black text-indigo-500 text-lg">
-                                            {{ number_format($area->promedio_area, 2) ?? '0.00' }}
-                                        </div>
-                                        <div class="w-24 ml-auto bg-neutral-100 dark:bg-neutral-700 h-1 rounded-full mt-1">
-                                            <div class="bg-indigo-500 h-1 rounded-full" style="width: {{ min(($area->promedio_area / 20) * 100, 100) }}%"></div>
-                                        </div>
+                                        <span class="text-lg font-black text-blue-600 dark:text-blue-400">{{ $ciclo->total_alumnos }}</span>
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+
                 @else
                     {{-- VISTA ALUMNO: Historial Personal y Pagos --}}
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         
-                        {{-- Columna 1: Mis Simulacros --}}
+                        {{-- Columna 1: Mis Simulacros (REDISEÑADO) --}}
                         <div>
                             <div class="flex items-center gap-3 mb-6">
                                 <div class="w-2 h-6 bg-indigo-500 rounded-full"></div>
                                 <h3 class="text-md font-black text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">Historial de Simulacros</h3>
                             </div>
-                            <div class="space-y-3">
+                            <div class="space-y-4">
                                 @forelse($data['mis_resultados'] as $r)
-                                    <div class="group flex items-center justify-between p-4 rounded-xl border border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/30">
-                                        <div class="flex flex-col">
-                                            <span class="text-sm font-black text-neutral-800 dark:text-neutral-200">{{ $r->simulacro->nombre ?? 'Simulacro General' }}</span>
-                                            <span class="text-[10px] text-neutral-400 font-bold uppercase italic">C: {{ $r->correctas }} | I: {{ $r->incorrectas }}</span>
+                                    <div class="flex flex-col p-5 rounded-2xl border border-neutral-100 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/30 hover:border-indigo-300 transition-all">
+                                        {{-- Fila Superior: Nombre y Puntaje --}}
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="max-w-[70%]">
+                                                <h4 class="text-base font-black text-neutral-800 dark:text-neutral-100 uppercase leading-tight">
+                                                    {{ $r->simulacro->nombre ?? 'Simulacro General' }}
+                                                </h4>
+                                                <p class="text-[10px] font-bold text-neutral-400 mt-1 flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                    FECHA: {{ \Carbon\Carbon::parse($r->simulacro->fecha)->format('d/m/Y') }}
+                                                </p>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 leading-none">{{ $r->puntaje }}</div>
+                                                <div class="text-[9px] font-black text-white bg-indigo-500 px-2 py-0.5 rounded-full mt-1 uppercase">Puesto #{{ $r->puesto }}</div>
+                                            </div>
                                         </div>
-                                        <div class="text-right">
-                                            <div class="text-xl font-black text-indigo-600 dark:text-indigo-400">{{ $r->puntaje }}</div>
-                                            <div class="text-[10px] font-bold text-neutral-400 uppercase">Puesto {{ $r->puesto }}</div>
+
+                                        {{-- Fila Inferior: Estadísticas Detalladas --}}
+                                        <div class="flex items-center gap-2 border-t border-neutral-100 dark:border-neutral-800 pt-3">
+                                            <div class="flex-1 flex justify-center gap-4">
+                                                <div class="text-center">
+                                                    <span class="block text-[10px] font-black text-emerald-600 uppercase">Correctas</span>
+                                                    <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">{{ $r->correctas }}</span>
+                                                </div>
+                                                <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700"></div>
+                                                <div class="text-center">
+                                                    <span class="block text-[10px] font-black text-rose-600 uppercase">Incorrectas</span>
+                                                    <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">{{ $r->incorrectas }}</span>
+                                                </div>
+                                                <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700"></div>
+                                                <div class="text-center">
+                                                    <span class="block text-[10px] font-black text-neutral-400 uppercase">Blanco</span>
+                                                    <span class="text-sm font-bold text-neutral-700 dark:text-neutral-300">{{ $r->en_blanco ?? 0 }}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 @empty

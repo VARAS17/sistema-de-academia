@@ -12,7 +12,7 @@
                 <div class="flex items-center">
                     <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                     <button wire:click="cancel" class="ml-1 md:ml-2 hover:text-indigo-600 transition-colors {{ $view == 'index' ? 'font-bold text-indigo-700' : '' }}">
-                        Gestión de Alumnos
+                        Gestión de Estudiantes
                     </button>
                 </div>
             </li>
@@ -40,6 +40,16 @@
             <button @click="show = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
         </div>
     @endif
+    @if (session()->has('error'))
+    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)"
+         class="mb-6 p-4 bg-white border-l-4 border-red-500 shadow-sm rounded-r-xl flex justify-between items-center transition-all">
+        <div class="flex items-center text-red-700 font-medium">
+            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {{ session('error') }}
+        </div>
+        <button @click="show = false" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+    </div>
+@endif
 
     <!-- 3. CONTENEDOR PRINCIPAL -->
     <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
@@ -118,13 +128,13 @@
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex justify-center gap-1">
-                                            <button wire:click="show({{ $alumno->id }})" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Ver Detalles">
+                                            <button wire:click="show({{ $alumno->user_id }})" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm" title="Ver Detalles">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                             </button>
-                                            <button wire:click="edit({{ $alumno->id }})" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm group">
+                                            <button wire:click="edit({{ $alumno->user_id }})" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all shadow-sm group">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                             </button>
-                                            <button wire:click="confirmDelete({{ $alumno->id }})" 
+                                            <button wire:click="confirmDelete({{ $alumno->user_id }})" 
                                                     class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all shadow-sm">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
@@ -290,12 +300,10 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-8 py-4 flex flex-col sm:flex-row-reverse gap-3 mt-2">
-                <button wire:click="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-100">
-                    Confirmar Eliminación
-                </button>
-                <button wire:click="$set('alumnoIdBeingDeleted', null)" type="button" class="inline-flex justify-center rounded-xl border border-gray-200 px-8 py-3 bg-white text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
-                    Cancelar
-                </button>
+<button wire:click.prevent="delete" type="button" class="inline-flex justify-center rounded-xl px-8 py-3 bg-red-600 text-sm font-black text-white hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-100">
+    <span wire:loading.remove wire:target="delete">Confirmar Eliminación</span>
+    <span wire:loading wire:target="delete">Eliminando...</span>
+</button>
             </div>
         </div>
     </div>

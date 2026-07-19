@@ -8,6 +8,8 @@ use App\Models\PagoMatricula;
 use App\Models\ResultadoSimulacro;
 use App\Models\Asistencia;
 use App\Models\Area;
+use App\Models\Matricula;
+use App\Models\Ciclo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -22,18 +24,19 @@ class DashboardController extends Controller
             // 1. Detectar nombres de tablas y llaves primarias dinámicamente
             $modeloAlumno = new Alumno();
             $modeloResultado = new ResultadoSimulacro();
+            $modeloMatricula = new Matricula();
 
             $tablaAlumnos = $modeloAlumno->getTable();
-            $pkAlumno = $modeloAlumno->getKeyName(); // Detecta si es 'id', 'alumno_id', etc.
+            $pkAlumno = $modeloAlumno->getKeyName(); // 'user_id'
             
             $tablaResultados = $modeloResultado->getTable();
-            // Asumimos que la columna de puntaje se llama 'puntaje' y la foránea 'alumno_id'
-            // Si tienen otros nombres, cámbiados abajo en el selectRaw
+            $tablaMatriculas = $modeloMatricula->getTable();
 
-            // 2. Consulta de Rendimiento por Áreas
+            // 2. Rendimiento por Áreas (vía matriculas, ya que alumnos.carrera_id quedó obsoleto)
             $rendimiento_areas = Area::select('areas.nombre', 'areas.id')
                 ->leftJoin('carreras', 'areas.id', '=', 'carreras.area_id')
-                ->leftJoin($tablaAlumnos, 'carreras.id', '=', $tablaAlumnos . '.carrera_id')
+                ->leftJoin($tablaMatriculas, 'carreras.id', '=', $tablaMatriculas . '.carrera_id')
+                ->leftJoin($tablaAlumnos, $tablaMatriculas . '.alumno_id', '=', $tablaAlumnos . '.' . $pkAlumno)
                 ->leftJoin($tablaResultados, $tablaAlumnos . '.' . $pkAlumno, '=', $tablaResultados . '.alumno_id')
                 ->selectRaw("
                     COUNT(DISTINCT {$tablaAlumnos}.{$pkAlumno}) as total_alumnos, 
@@ -44,23 +47,35 @@ class DashboardController extends Controller
                 ->orderByDesc('promedio_area')
                 ->get();
 
+            // 3. Alumnos por Ciclo (todos los ciclos, activos e inactivos)
+            // 3. Alumnos por Ciclo (Corregido para buscar en la tabla matriculas)
+            $alumnos_por_ciclo = Ciclo::select('ciclos.id', 'ciclos.nombre', 'areas.nombre as area_nombre')
+                ->leftJoin('areas', 'ciclos.area_id', '=', 'areas.id')
+                // Unimos con matrículas en lugar de alumnos directamente
+                ->leftJoin($tablaMatriculas, 'ciclos.id', '=', $tablaMatriculas . '.ciclo_id')
+                // Unimos con alumnos para contar los registros reales
+                ->leftJoin($tablaAlumnos, $tablaMatriculas . '.alumno_id', '=', $tablaAlumnos . '.' . $pkAlumno)
+                ->selectRaw("COUNT(DISTINCT {$tablaMatriculas}.alumno_id) as total_alumnos")
+                ->groupBy('ciclos.id', 'ciclos.nombre', 'areas.nombre')
+                ->orderBy('ciclos.nombre')
+                ->get();
             $data = [
                 'role' => 'admin',
                 'total_alumnos' => Alumno::count(),
                 'pagos_pendientes' => PagoMatricula::where('estado', 'pendiente')->count(),
                 'monto_recaudado' => PagoMatricula::where('estado', 'pagado')->sum('monto'),
                 'rendimiento_areas' => $rendimiento_areas,
+                'alumnos_por_ciclo' => $alumnos_por_ciclo,
             ];
 
         } else {
             // Lógica para ALUMNO
-            $alumno = Alumno::where('user_id', $user->id)->first();
+            $alumno = Alumno::with('matriculaActiva.carrera')->where('user_id', $user->id)->first();
 
             if (!$alumno) {
                 return view('dashboard', ['data' => ['role' => 'sin_perfil']]);
             }
 
-            // Usamos la PK detectada también aquí por seguridad
             $pk = $alumno->getKeyName();
 
             $data = [

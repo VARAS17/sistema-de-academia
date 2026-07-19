@@ -17,17 +17,12 @@ class Puntajesimulacro extends Component
     public $ciclo_id;
     public $simulacro_id;
     
-    // Propiedades para Admin/Docente (Matriz de entrada)
+    // Matriz de entrada para Admin/Docente
     public $resultados = []; 
 
-    // Propiedad para Alumno
+    // Propiedad para vista de Alumno
     public $misResultados = [];
 
-    /**
-     * Reglas de validación: 
-     * 'integer' asegura que no se acepten decimales en las entradas.
-     * 'min:0' y 'max:100' para rangos lógicos.
-     */
     protected function rules()
     {
         return [
@@ -43,14 +38,26 @@ class Puntajesimulacro extends Component
 
     public function mount()
     {
-        // Si el usuario es alumno, cargamos su historial automáticamente
         if (auth()->user()->hasRole('alumno')) {
             $this->cargarNotasAlumno();
         }
     }
 
-    // --- LÓGICA DE FILTROS EN CASCADA ---
+    /**
+     * HOOK DE LIVEWIRE: Se activa al cambiar valores en el array $resultados
+     */
+    public function updatedResultados($value, $name)
+    {
+        $parts = explode('.', $name);
+        if (count($parts) >= 2) {
+            $alumno_id = $parts[0];
+            $this->calcular($alumno_id);
+        }
+    }
 
+    /**
+     * FILTROS EN CASCADA
+     */
     public function updatedAreaId()
     {
         $this->reset(['ciclo_id', 'simulacro_id', 'resultados']);
@@ -68,8 +75,6 @@ class Puntajesimulacro extends Component
         }
     }
 
-    // --- CARGA DE DATOS PARA ADMIN ---
-
     public function cargarAlumnosParaEdicion()
     {
         if (!$this->simulacro_id || !$this->ciclo_id) {
@@ -77,7 +82,6 @@ class Puntajesimulacro extends Component
             return;
         }
 
-        // Buscamos alumnos con matrícula ACTIVA en el ciclo seleccionado
         $alumnos = Alumno::with('user')
             ->whereHas('matriculas', function($q) {
                 $q->where('ciclo_id', $this->ciclo_id)
@@ -99,43 +103,46 @@ class Puntajesimulacro extends Component
                 'incorrectas' => (int)($existente->incorrectas ?? 0),
                 'blanco' => (int)($existente->blanco ?? 0),
                 'puntaje' => $existente->puntaje ?? 0.000,
-                'error_suma' => false, // Bandera visual para el front
+                'error_suma' => false,
             ];
+            
+            // Forzar cálculo inicial para validar si lo cargado de DB ya suma 100
+            $this->calcular($alumno->user_id);
         }
     }
 
-    // --- CÁLCULOS Y PROCESAMIENTO ---
-
     /**
-     * Se activa vía wire:change o wire:input cuando el usuario digita valores
+     * PROCESAMIENTO Y CÁLCULO ESTRICTO (SUMA = 100)
      */
     public function calcular($alumno_id)
     {
-        // 1. Forzar conversión a entero (elimina decimales si el usuario intenta pegarlos)
-        $c = intval($this->resultados[$alumno_id]['correctas'] ?? 0);
-        $i = intval($this->resultados[$alumno_id]['incorrectas'] ?? 0);
-        $b = intval($this->resultados[$alumno_id]['blanco'] ?? 0);
+        // 1. Sanitización: Cada campo individual entre 0 y 100
+        $c = max(0, min(100, intval($this->resultados[$alumno_id]['correctas'] ?? 0)));
+        $i = max(0, min(100, intval($this->resultados[$alumno_id]['incorrectas'] ?? 0)));
+        $b = max(0, min(100, intval($this->resultados[$alumno_id]['blanco'] ?? 0)));
         
-        // 2. Sincronizar de vuelta al array para que el front vea el número limpio
         $this->resultados[$alumno_id]['correctas'] = $c;
         $this->resultados[$alumno_id]['incorrectas'] = $i;
         $this->resultados[$alumno_id]['blanco'] = $b;
 
         $totalPreguntas = $c + $i + $b;
 
-        // 3. Validar que la suma no exceda 100
-        if ($totalPreguntas > 100) {
+        // 2. REGLA ESTRICTA: Debe sumar exactamente 100
+        if ($totalPreguntas !== 100) {
             $this->resultados[$alumno_id]['error_suma'] = true;
-            $this->resultados[$alumno_id]['puntaje'] = 0;
-            session()->flash("error_row_$alumno_id", "Exceso: $totalPreguntas preguntas.");
-        } else {
-            $this->resultados[$alumno_id]['error_suma'] = false;
             
-            // Fórmula: (Correctas * 4.025) - (Incorrectas * 0.975)
+            // Calculamos el puntaje de todos modos para que vean el resultado, 
+            // pero el error_suma bloqueará el guardado.
             $puntaje = ($c * 4.025) - ($i * 0.975);
-            
-            // Guardamos el puntaje con 3 decimales pero no permitimos negativos
-            $this->resultados[$alumno_id]['puntaje'] = number_format(max(0, $puntaje), 3, '.', '');
+            $this->resultados[$alumno_id]['puntaje'] = number_format($puntaje, 3, '.', '');
+
+            $motivo = ($totalPreguntas > 100) ? "Exceso" : "Faltan";
+            session()->flash("error_row_$alumno_id", "$motivo: $totalPreguntas/100");
+        } else {
+            // Suma perfecta de 100
+            $this->resultados[$alumno_id]['error_suma'] = false;
+            $puntaje = ($c * 4.025) - ($i * 0.975);
+            $this->resultados[$alumno_id]['puntaje'] = number_format($puntaje, 3, '.', '');
         }
     }
 
@@ -143,14 +150,13 @@ class Puntajesimulacro extends Component
     {
         if (auth()->user()->hasRole('alumno')) return;
 
-        // Validar tipos de datos básicos (enteros)
         $this->validate();
 
-        // Validar integridad: que ninguna fila sume más de 100
+        // Verificación de seguridad: Todas las filas deben sumar 100 exactamente
         foreach ($this->resultados as $user_id => $data) {
-            $sumaTotal = (int)$data['correctas'] + (int)$data['incorrectas'] + (int)$data['blanco'];
-            if ($sumaTotal > 100) {
-                session()->flash('error', "No se puede guardar. El alumno {$data['nombre']} tiene $sumaTotal preguntas.");
+            $suma = (int)$data['correctas'] + (int)$data['incorrectas'] + (int)$data['blanco'];
+            if ($suma !== 100) {
+                session()->flash('error', "No se puede guardar. El estudiante {$data['nombre']} tiene $suma preguntas (deben ser 100).");
                 return;
             }
         }
@@ -174,15 +180,14 @@ class Puntajesimulacro extends Component
                 $this->recalcularRanking();
             });
 
-            session()->flash('message', 'Resultados guardados y ranking actualizado.');
+            session()->flash('message', 'Puntajes guardados con éxito.');
         } catch (\Exception $e) {
-            session()->flash('error', 'Error en el servidor: ' . $e->getMessage());
+            session()->flash('error', 'Error al procesar: ' . $e->getMessage());
         }
     }
 
     private function recalcularRanking()
     {
-        // Obtener resultados de este simulacro específico ordenados por puntaje
         $resultados = ResultadoSimulacro::where('simulacro_id', $this->simulacro_id)
             ->orderBy('puntaje', 'desc')
             ->get();
@@ -191,8 +196,6 @@ class Puntajesimulacro extends Component
             $res->update(['puesto' => $indice + 1]);
         }
     }
-
-    // --- VISTA ALUMNO ---
 
     public function cargarNotasAlumno()
     {
@@ -206,12 +209,8 @@ class Puntajesimulacro extends Component
     {
         return view('livewire.c-r-u-d.puntajesimulacro', [
             'areas' => Area::all(),
-            'ciclos' => $this->area_id 
-                ? Ciclo::where('area_id', $this->area_id)->get() 
-                : collect(),
-            'simulacros' => $this->ciclo_id 
-                ? Simulacro::where('ciclo_id', $this->ciclo_id)->get() 
-                : collect()
+            'ciclos' => $this->area_id ? Ciclo::where('area_id', $this->area_id)->get() : collect(),
+            'simulacros' => $this->ciclo_id ? Simulacro::where('ciclo_id', $this->ciclo_id)->get() : collect()
         ]);
     }
 }

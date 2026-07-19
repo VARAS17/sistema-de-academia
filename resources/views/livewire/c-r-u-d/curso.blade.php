@@ -68,7 +68,7 @@
                             <thead class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b border-gray-100">
                                 <tr>
                                     <th class="px-6 py-4">Nombre del Curso</th>
-                                    <th class="px-6 py-4">Área Académica</th>
+                                    <th class="px-6 py-4">Área</th>
                                     <th class="px-6 py-4">Ciclo</th>
                                     <th class="px-6 py-4 text-center">Acciones</th>
                                 </tr>
