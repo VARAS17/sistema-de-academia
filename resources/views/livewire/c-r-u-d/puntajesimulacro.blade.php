@@ -1,217 +1,248 @@
-<div class=" bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
-        <div class="w-full px-4">
-        
-        <!-- 1. BREADCRUMBS -->
-        <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
+<div class="bg-amber-50/40 min-h-screen font-sans antialiased pb-20" x-data="{ showDeleteModal: false }" x-on:show-delete-modal.window="showDeleteModal = true">
+    <div class="w-full px-4 pt-6">
+
+        <!-- 1. BREADCRUMBS DINÁMICOS -->
+        <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-2xl" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium hover:text-indigo-600 transition-colors">
+                    <button wire:click="setView('list')" class="inline-flex items-center text-sm font-medium hover:text-indigo-600 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                        Inicio
-                    </a>
+                        Gestión de Puntajes
+                    </button>
                 </li>
-                <li>
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                        <span class="ml-1 text-sm font-bold text-indigo-600 md:ml-2 tracking-tight">Gestión de Puntajes</span>
-                    </div>
-                </li>
+                @if($view === 'edit')
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                            <span class="ml-1 text-sm font-bold text-indigo-600 md:ml-2">Registrar Nota: {{ $selectedAlumno->user->name }}</span>
+                        </div>
+                    </li>
+                @endif
+                @if($view === 'show')
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                            <span class="ml-1 text-sm font-bold text-indigo-600 md:ml-2">Detalle de Resultado</span>
+                        </div>
+                    </li>
+                @endif
             </ol>
         </nav>
 
-        <!-- 2. MENSAJES DE ESTADO GLOBAL -->
+        <!-- 2. MENSAJES GLOBAL -->
         @if (session()->has('message'))
-            <div x-data="{show: true}" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-                 class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 shadow-sm rounded-r-xl flex justify-between items-center animate-fade-in-down">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <span class="font-bold text-sm">{{ session('message') }}</span>
-                </div>
-                <button @click="show = false" class="text-emerald-400 hover:text-emerald-600 transition-colors">&times;</button>
+            <div class="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-xl flex justify-between items-center animate-bounce">
+                <span class="font-bold text-sm">{{ session('message') }}</span>
             </div>
         @endif
 
-        @if (session()->has('error'))
-            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-800 shadow-sm rounded-r-xl flex justify-between items-center">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
-                    <span class="font-bold text-sm">{{ session('error') }}</span>
-                </div>
-            </div>
-        @endif
-
-        {{-- 3. VISTA PARA ADMIN / DOCENTE --}}
         @hasanyrole('admin|docente')
-            <div class="space-y-6">
-                
-                <!-- FILTROS EN CASCADA -->
-                <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="space-y-1">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">1. Área Académica</label>
-                        <select wire:model.live="area_id" class="w-full bg-gray-50 border-2 border-transparent rounded-xl font-bold text-sm focus:bg-white focus:border-indigo-500 transition-all p-3.5 outline-none">
-                            <option value="">Seleccione Área...</option>
-                            @foreach($areas as $area)
-                                <option value="{{ $area->id }}">{{ $area->nombre }}</option>
-                            @endforeach
-                        </select>
+            {{-- A. VISTA LISTADO (TABLA + BUSCADOR + ORDEN) --}}
+            @if($view === 'list')
+                <div class="space-y-6 animate-fade-in">
+                    <!-- FILTROS -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Área</label>
+                            <select wire:model.live="area_id" class="w-full bg-gray-50 border-none rounded-xl font-bold text-sm p-3.5 focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Seleccione Área...</option>
+                                @foreach($areas as $area) <option value="{{ $area->id }}">{{ $area->nombre }}</option> @endforeach
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ciclo</label>
+                            <select wire:model.live="ciclo_id" class="w-full bg-gray-50 border-none rounded-xl font-bold text-sm p-3.5 disabled:opacity-40" {{ !$area_id ? 'disabled' : '' }}>
+                                <option value="">Seleccione Ciclo...</option>
+                                @foreach($ciclos as $ciclo) <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option> @endforeach
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Simulacro</label>
+                            <select wire:model.live="simulacro_id" class="w-full bg-gray-50 border-none rounded-xl font-bold text-sm p-3.5 disabled:opacity-40" {{ !$ciclo_id ? 'disabled' : '' }}>
+                                <option value="">Seleccione Simulacro...</option>
+                                @foreach($simulacros as $sim) <option value="{{ $sim->id }}">{{ $sim->nombre }}</option> @endforeach
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">2. Ciclo Académico</label>
-                        <select wire:model.live="ciclo_id" class="w-full bg-gray-50 border-2 border-transparent rounded-xl font-bold text-sm focus:bg-white focus:border-indigo-500 transition-all p-3.5 outline-none disabled:opacity-40" {{ !$area_id ? 'disabled' : '' }}>
-                            <option value="">Seleccione Ciclo...</option>
-                            @foreach($ciclos as $ciclo)
-                                <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">3. Simulacro</label>
-                        <select wire:model.live="simulacro_id" class="w-full bg-gray-50 border-2 border-transparent rounded-xl font-bold text-sm focus:bg-white focus:border-indigo-500 transition-all p-3.5 outline-none disabled:opacity-40" {{ !$ciclo_id ? 'disabled' : '' }}>
-                            <option value="">Seleccione Simulacro...</option>
-                            @foreach($simulacros as $sim)
-                                <option value="{{ $sim->id }}">{{ $sim->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <!-- TABLA DE RESULTADOS -->
-                @if($simulacro_id && count($resultados) > 0)
-                    <div class="bg-white shadow-xl border border-gray-100 sm:rounded-3xl overflow-hidden animate-fade-in">
-                        
-                        <div class="p-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
-                            <h3 class="text-sm font-black text-gray-400 uppercase tracking-widest italic ml-2">Registro de Notas (Suma debe ser exactamente 100)</h3>
+                    @if($simulacro_id)
+                        <!-- BUSCADOR Y ORDEN -->
+                        <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-indigo-900 p-4 rounded-2xl shadow-lg">
+                            <div class="relative w-full md:w-1/2">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </span>
+                                <input wire:model.live.debounce.300ms="search" type="text" placeholder="Buscar por Nombre o DNI..." class="w-full bg-indigo-800 border-none text-white placeholder-indigo-300 rounded-xl py-2.5 pl-10 focus:ring-2 focus:ring-indigo-400">
+                            </div>
+                            <button wire:click="toggleSort" class="flex items-center gap-2 px-6 py-2.5 bg-white text-indigo-900 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-50 transition-all">
+                                <span>Ordenar Puntaje: {{ $sortScore === 'desc' ? 'MAYOR A MENOR' : 'MENOR A MAYOR' }}</span>
+                                <svg class="w-4 h-4 {{ $sortScore === 'asc' ? 'rotate-180' : '' }} transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
                         </div>
 
-                        <div class="overflow-x-auto">
+                        <!-- TABLA -->
+                        <div class="bg-white shadow-xl rounded-3xl overflow-hidden border border-gray-100">
                             <table class="w-full text-sm text-left">
-                                <thead class="bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest">
+                                <thead class="bg-gray-50 border-b border-gray-100 text-[10px] font-black uppercase text-gray-400 tracking-widest">
                                     <tr>
-                                        <th class="px-6 py-5">Estudiante</th>
-                                        <th class="px-4 py-5 text-center w-32">Correctas</th>
-                                        <th class="px-4 py-5 text-center w-32">Incorrectas</th>
-                                        <th class="px-4 py-5 text-center w-32">Blanco</th>
-                                        <th class="px-4 py-5 text-center w-24">Suma</th>
-                                        <th class="px-6 py-5 text-center w-40">Puntaje Total</th>
+                                        <th class="px-6 py-4">Estudiante</th>
+                                        <th class="px-6 py-4">DNI</th>
+                                        <th class="px-6 py-4 text-center">Puntaje</th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
-                                    @foreach($resultados as $id => $data)
-                                        @php
-                                            $totalFila = (int)$data['correctas'] + (int)$data['incorrectas'] + (int)$data['blanco'];
-                                            $isError = $data['error_suma'] || $totalFila !== 100;
-                                            $esNegativo = $data['puntaje'] < 0;
-                                        @endphp
-                                        <tr class="hover:bg-indigo-50/30 transition-colors {{ $isError ? 'bg-red-50/50' : '' }}">
-                                            <td class="px-6 py-4">
-                                                <div class="font-bold text-gray-900 uppercase">{{ $data['nombre'] }}</div>
-                                                <div class="text-[10px] font-mono text-gray-400">DNI: {{ $data['dni'] }}</div>
-                                                @if(session()->has("error_row_$id"))
-                                                    <span class="text-[10px] text-red-600 font-bold animate-pulse italic">{{ session("error_row_$id") }}</span>
-                                                @endif
-                                            </td>
-                                            
-                                            <td class="px-4 py-4 text-center">
-                                                <input type="number" 
-                                                       oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0;"
-                                                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                                       wire:model.live.debounce.500ms="resultados.{{$id}}.correctas" 
-                                                       class="w-full text-center bg-white border-2 {{ $isError ? 'border-red-300' : 'border-emerald-100' }} text-emerald-700 rounded-xl font-bold focus:ring-emerald-500 transition-all">
-                                            </td>
-                                            <td class="px-4 py-4 text-center">
-                                                <input type="number" 
-                                                       oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0;"
-                                                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                                       wire:model.live.debounce.500ms="resultados.{{$id}}.incorrectas" 
-                                                       class="w-full text-center bg-white border-2 {{ $isError ? 'border-red-300' : 'border-rose-100' }} text-rose-700 rounded-xl font-bold focus:ring-rose-500 transition-all">
-                                            </td>
-                                            <td class="px-4 py-4 text-center">
-                                                <input type="number" 
-                                                       oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0;"
-                                                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
-                                                       wire:model.live.debounce.500ms="resultados.{{$id}}.blanco"
-                                                       class="w-full text-center bg-white border-2 {{ $isError ? 'border-red-300' : 'border-gray-100' }} text-gray-500 rounded-xl font-bold focus:ring-indigo-500 transition-all">
-                                            </td>
-
-                                            <!-- Visualizador de suma: Verde si es 100, Rojo si no -->
-                                            <td class="px-4 py-4 text-center">
-                                                <span class="text-xs font-black {{ $totalFila === 100 ? 'text-emerald-600' : 'text-red-600 animate-bounce' }}">
-                                                    {{ $totalFila }}/100
-                                                </span>
-                                            </td>
-
+                                    @forelse($alumnos as $alumno)
+                                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                                            <td class="px-6 py-4 font-bold text-gray-800 uppercase">{{ $alumno->user->name }}</td>
+                                            <td class="px-6 py-4 font-mono text-gray-500 text-xs">{{ $alumno->dni }}</td>
                                             <td class="px-6 py-4 text-center">
-                                                <span class="inline-block w-full py-2 {{ $isError ? 'bg-gray-400' : ($esNegativo ? 'bg-rose-600' : 'bg-indigo-600') }} text-white rounded-xl font-black text-base shadow-sm transition-all">
-                                                    {{ number_format($data['puntaje'], 3) }}
+                                                <span class="px-4 py-1 rounded-lg font-black {{ ($alumno->puntaje_sort ?? 0) <= 0 ? 'bg-gray-100 text-gray-400' : 'bg-emerald-100 text-emerald-700' }}">
+                                                    {{ number_format($alumno->puntaje_sort ?? 0, 3) }}
                                                 </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right space-x-1">
+                                                <button wire:click="setView('show', {{ $alumno->user_id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors" title="Ver Detalle">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                </button>
+                                                <button wire:click="setView('edit', {{ $alumno->user_id }})" class="p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition-colors" title="Editar Puntaje">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button wire:click="confirmarEliminacion({{ $alumno->user_id }})" class="p-2 text-rose-600 hover:bg-rose-100 rounded-lg transition-colors" title="Limpiar Puntaje">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
                                             </td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr><td colspan="4" class="p-10 text-center text-gray-400 font-bold italic">No se encontraron resultados.</td></tr>
+                                    @endforelse
                                 </tbody>
                             </table>
+                            <div class="p-4 bg-gray-50">{{ $alumnos->links() }}</div>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            {{-- B. VISTA REGISTRO (FORMULARIO INDIVIDUAL) --}}
+            @if($view === 'edit')
+                <div class="max-w-4xl mx-auto animate-fade-in-down">
+                    <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-gray-100">
+                        <div class="p-8 bg-indigo-900 text-white">
+                            <h2 class="text-2xl font-black uppercase italic">{{ $selectedAlumno->user->name }}</h2>
+                            <p class="text-indigo-300 font-bold text-xs tracking-widest mt-1 uppercase">DNI: {{ $selectedAlumno->dni }} | Registro de Notas</p>
+                        </div>
+                        
+                        <div class="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-emerald-600 uppercase ml-2 tracking-widest">Correctas</label>
+                                <input type="number" wire:model.live.debounce.500ms="correctas" class="w-full text-2xl font-black text-center bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 focus:ring-emerald-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-rose-600 uppercase ml-2 tracking-widest">Incorrectas</label>
+                                <input type="number" wire:model.live.debounce.500ms="incorrectas" class="w-full text-2xl font-black text-center bg-rose-50 border-2 border-rose-100 rounded-2xl p-4 focus:ring-rose-500">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-gray-500 uppercase ml-2 tracking-widest">En Blanco</label>
+                                <input type="number" wire:model.live.debounce.500ms="blanco" class="w-full text-2xl font-black text-center bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 focus:ring-gray-400">
+                            </div>
                         </div>
 
-                        <!-- Footer de la tabla -->
-                        <div class="p-8 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div class="flex flex-col text-gray-500 bg-white px-4 py-2 rounded-lg border border-gray-200">
-                                <div class="flex items-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                    <p class="text-[10px] font-bold uppercase tracking-widest italic">La suma de Correctas + Incorrectas + Blanco debe ser 100 exacto.</p>
-                                </div>
-                                <p class="text-[9px] text-indigo-400 font-bold ml-6 uppercase">* El botón de guardado solo funcionará si todos los alumnos cumplen la regla.</p>
+                        <div class="px-8 pb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="text-center md:text-left">
+                                <span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Puntaje Calculado</span>
+                                <span class="text-5xl font-black text-indigo-600">{{ number_format($puntaje, 3) }}</span>
                             </div>
-                            <button wire:click="save" 
-                                    class="w-full md:w-auto px-12 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center">
-                                <span wire:loading wire:target="save" class="mr-2 animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                                Guardar Puntajes de Simulacro
+
+                            <div class="flex flex-col items-end gap-3">
+                                @if(session()->has('error_suma'))
+                                    <span class="px-4 py-2 bg-rose-100 text-rose-600 text-xs font-black rounded-lg animate-pulse">
+                                        {{ session('error_suma') }}
+                                    </span>
+                                @else
+                                    <span class="px-4 py-2 bg-emerald-100 text-emerald-600 text-xs font-black rounded-lg">
+                                        ✓ Suma perfecta: 100/100
+                                    </span>
+                                @endif
+                                
+                                <div class="flex gap-2">
+                                    <button wire:click="setView('list')" class="px-8 py-4 bg-gray-100 text-gray-500 rounded-2xl font-bold uppercase text-xs hover:bg-gray-200 transition-all">Cancelar</button>
+                                    <button wire:click="save" @if($error_suma) disabled @endif class="px-10 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-indigo-700 disabled:opacity-30 transition-all">Guardar Puntaje</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- C. VISTA DETALLE (SOLO LECTURA) --}}
+            @if($view === 'show')
+                <div class="max-w-2xl mx-auto animate-fade-in">
+                    <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+                        <div class="flex justify-between items-start mb-8">
+                            <div>
+                                <h2 class="text-2xl font-black text-gray-800 uppercase leading-tight">{{ $selectedAlumno->user->name }}</h2>
+                                <p class="text-indigo-500 font-bold tracking-widest text-xs uppercase">{{ $selectedAlumno->dni }}</p>
+                            </div>
+                            <button wire:click="setView('list')" class="text-gray-400 hover:text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
                             </button>
                         </div>
+
+                        <div class="grid grid-cols-3 gap-4 mb-8">
+                            <div class="bg-emerald-50 p-4 rounded-2xl text-center">
+                                <span class="block text-[10px] font-black text-emerald-600 uppercase">Correctas</span>
+                                <span class="text-2xl font-black text-emerald-700">{{ $correctas }}</span>
+                            </div>
+                            <div class="bg-rose-50 p-4 rounded-2xl text-center">
+                                <span class="block text-[10px] font-black text-rose-600 uppercase">Incorrectas</span>
+                                <span class="text-2xl font-black text-rose-700">{{ $incorrectas }}</span>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-2xl text-center">
+                                <span class="block text-[10px] font-black text-gray-500 uppercase">Blancos</span>
+                                <span class="text-2xl font-black text-gray-700">{{ $blanco }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-600 p-6 rounded-[2rem] text-center shadow-lg">
+                            <span class="block text-indigo-200 text-xs font-bold uppercase tracking-[0.2em] mb-1">Puntaje Final</span>
+                            <span class="text-5xl font-black text-white">{{ number_format($puntaje, 3) }}</span>
+                        </div>
                     </div>
-                @elseif($simulacro_id)
-                    <div class="bg-white p-20 rounded-[3rem] border-2 border-dashed border-gray-100 text-center">
-                        <p class="text-gray-400 font-bold text-lg italic uppercase">No hay alumnos activos en este ciclo.</p>
-                    </div>
-                @else
-                    <div class="bg-indigo-50/50 p-20 rounded-[3rem] border-2 border-dashed border-indigo-100 text-center">
-                        <p class="text-indigo-400 font-black text-lg uppercase tracking-widest">Seleccione los filtros para cargar la lista</p>
-                    </div>
-                @endif
-            </div>
+                </div>
+            @endif
         @endhasanyrole
 
-        {{-- 4. VISTA PARA EL ALUMNO --}}
+        {{-- D. VISTA ALUMNO (HISTORIAL) --}}
         @hasrole('alumno')
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 bg-gray-50/50">
-                    <h3 class="text-lg font-black text-gray-800 uppercase">Mi Historial de Notas</h3>
+            <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in">
+                <div class="p-8 bg-gray-900">
+                    <h3 class="text-xl font-black text-white uppercase italic tracking-tighter">Mi Historial de Simulacros</h3>
+                    <p class="text-gray-400 text-xs uppercase font-bold mt-1">Sigue tu progreso académico</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
-                        <thead class="bg-gray-900 text-white text-[10px] font-black uppercase">
+                        <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 tracking-widest">
                             <tr>
-                                <th class="px-6 py-4">Simulacro</th>
-                                <th class="px-4 py-4 text-center">Correctas</th>
-                                <th class="px-4 py-4 text-center">Incorrectas</th>
-                                <th class="px-6 py-4 text-center">Puntaje</th>
-                                <th class="px-6 py-4 text-center">Ranking</th>
+                                <th class="px-6 py-5">Simulacro</th>
+                                <th class="px-6 py-5 text-center">Correctas</th>
+                                <th class="px-6 py-5 text-center">Incorrectas</th>
+                                <th class="px-6 py-5 text-center">Puntaje</th>
+                                <th class="px-6 py-5 text-center">Ranking</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @foreach($misResultados as $res)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4">
-                                        <div class="font-bold text-gray-900">{{ $res->simulacro->nombre }}</div>
-                                        <div class="text-[10px] text-gray-400">{{ $res->simulacro->fecha->format('d/m/Y') }}</div>
+                                <tr class="hover:bg-amber-50/50 transition-colors">
+                                    <td class="px-6 py-5">
+                                        <div class="font-black text-gray-800 uppercase leading-none">{{ $res->simulacro->nombre }}</div>
+                                        <div class="text-[10px] text-gray-400 font-bold mt-1">{{ $res->simulacro->fecha->format('d M, Y') }}</div>
                                     </td>
-                                    <td class="px-4 py-4 text-center font-bold text-emerald-600">{{ $res->correctas }}</td>
-                                    <td class="px-4 py-4 text-center font-bold text-rose-600">{{ $res->incorrectas }}</td>
-                                    <td class="px-6 py-4 text-center font-black {{ $res->puntaje < 0 ? 'text-rose-600' : 'text-indigo-600' }} text-lg">
-                                        {{ number_format($res->puntaje, 3) }}
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full font-black text-xs">
+                                    <td class="px-6 py-5 text-center font-bold text-emerald-600 bg-emerald-50/30">{{ $res->correctas }}</td>
+                                    <td class="px-6 py-5 text-center font-bold text-rose-600 bg-rose-50/30">{{ $res->incorrectas }}</td>
+                                    <td class="px-6 py-5 text-center font-black text-indigo-600 text-lg">{{ number_format($res->puntaje, 3) }}</td>
+                                    <td class="px-6 py-5 text-center">
+                                        <span class="px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full font-black text-xs shadow-sm">
                                             # {{ $res->puesto }}
                                         </span>
                                     </td>
@@ -222,5 +253,24 @@
                 </div>
             </div>
         @endhasrole
+
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN (ALUMNO ESPECÍFICO) -->
+    <div x-show="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-900 opacity-60"></div>
+            <div class="bg-white rounded-[2rem] overflow-hidden shadow-2xl z-50 max-w-sm w-full p-8 text-center animate-fade-in-up">
+                <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </div>
+                <h3 class="text-xl font-black text-gray-800 uppercase mb-2">¿Limpiar Puntaje?</h3>
+                <p class="text-gray-500 text-sm mb-8 font-medium italic">Los datos de este alumno para este simulacro volverán a cero. Esta acción es inmediata.</p>
+                <div class="flex gap-3">
+                    <button @click="showDeleteModal = false" class="flex-1 px-6 py-3 bg-gray-100 text-gray-500 rounded-xl font-bold uppercase text-xs">Cancelar</button>
+                    <button wire:click="deletePuntaje" @click="showDeleteModal = false" class="flex-1 px-6 py-3 bg-rose-600 text-white rounded-xl font-black uppercase text-xs shadow-lg shadow-rose-200">Sí, Limpiar</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

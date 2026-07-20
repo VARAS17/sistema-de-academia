@@ -85,7 +85,7 @@
         <div class="p-6">
             @if($view == 'index')
                 <!-- LISTADO -->
-                <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-inner">
+                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-fade-in-down">
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50/50">
                             <tr>

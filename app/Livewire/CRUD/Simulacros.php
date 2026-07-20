@@ -34,7 +34,8 @@ class Simulacros extends Component
             'nombre'   => 'required|min:5|string',
             'area_id'  => 'required|exists:areas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
-            'fecha'    => 'required|date',
+            'fecha'    => 'required|date|after_or_equal:2000-01-01',
+
         ];
     }
 
@@ -49,6 +50,7 @@ class Simulacros extends Component
         'ciclo_id.exists'   => 'El ciclo seleccionado no es válido.',
         'fecha.required'    => 'La fecha del simulacro es obligatoria.',
         'fecha.date'        => 'El formato de la fecha no es válido.',
+        'fecha.after_or_equal' => 'La fecha debe ser igual o posterior a 2000-01-01.',
     ];
 
     public function updatedAreaId($value)

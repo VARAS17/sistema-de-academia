@@ -50,11 +50,17 @@ class Alumno extends Model
     }
 
     public function matriculaActiva(): HasOne
-{
-    return $this->hasOne(Matricula::class, 'alumno_id', 'user_id')
-        ->latestOfMany(); // toma la más reciente por created_at
-        // Si 'estado' tiene un valor como 'activa', mejor usar:
-        // ->where('estado', 'activa')->latestOfMany();
-}
+    {
+        return $this->hasOne(Matricula::class, 'alumno_id', 'user_id')
+            ->latestOfMany(); // toma la más reciente por created_at
+            // Si 'estado' tiene un valor como 'activa', mejor usar:
+            // ->where('estado', 'activa')->latestOfMany();
+    }
+        public function resultados()
+    {
+        // Nota: Asegúrate de que el nombre de la clase sea el correcto 
+        // y que la llave foránea sea 'alumno_id'
+        return $this->hasMany(ResultadoSimulacro::class, 'alumno_id', 'user_id');
+    }
     
 }
