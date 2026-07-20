@@ -1,6 +1,7 @@
-<div class="py-1 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative">
+<div class=" bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
+    
     <!-- 1. SISTEMA DE BREADCRUMBS -->
-    <nav class="flex mb-6 text-sm flex-wrap items-center text-gray-500" aria-label="Breadcrumb">
+    <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-2 md:space-x-4">
             <li class="inline-flex items-center">
                 <a href="{{ route('dashboard') }}" class="inline-flex items-center hover:text-indigo-600 transition-colors">
@@ -12,7 +13,7 @@
                 <div class="flex items-center">
                     <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
                     <button wire:click="cancel" class="ml-1 md:ml-2 hover:text-indigo-600 transition-colors {{ $view == 'index' ? 'font-bold text-indigo-700' : '' }}">
-                        Gestión de Estudiantes
+                        Estudiantes
                     </button>
                 </div>
             </li>
@@ -53,26 +54,26 @@
 
     <!-- 3. CONTENEDOR PRINCIPAL -->
     <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-        
         <div class="p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white">
-            <div>
-                <h1 class="text-2xl font-black text-gray-800 tracking-tight">
-                    @if($view == 'index') Gestión de Alumnos @elseif($view == 'show') Ficha del Estudiante @elseif($view == 'create') Registro de Estudiante @else Actualización de Perfil @endif
-                </h1>
-                <p class="text-sm text-gray-500 mt-1">
-                    {{ $view == 'index' ? 'Visualiza, busca y administra la información de los estudiantes.' : 'Información personal y de identidad del alumno.' }}
-                </p>
-            </div>
-
             @if($view == 'index')
-                        <button wire:click="create"
-                            class="h-14 px-6 flex items-centero px-6 py-2.5 bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg flex items-center justify-center active:scale-95">
+                <!-- BUSCADOR (Movido aquí para estar al mismo nivel) -->
+                <div class="relative group w-full sm:max-w-md">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-500 transition-colors">
+                        <img src="{{ asset('meta-buscar/alumno.jpeg') }}" alt="Buscar" class="w-10 h-10 object-contain rounded">
+                    </div>
+                    <input wire:model.live.debounce.400ms="search" type="text" 
+                           placeholder="Buscar por nombre o DNI..." 
+                           class="block w-full pl-16 pr-4 py-3 border-2 border-gray-100 rounded-2xl bg-gray-50/50 focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all text-sm outline-none">
+                </div>
 
-                            <img src="{{ asset('meta-register/alumno.png') }}"
-                                alt="Registrar Alumno"
-                                class="w-14 h-14 mr-2 object-contain">
-                            Registrar Alumno
-                        </button>
+                <!-- BOTÓN REGISTRAR -->
+                <button wire:click="create"
+                    class="h-14 px-6 bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg flex items-center justify-center active:scale-95 whitespace-nowrap">
+                    <img src="{{ asset('meta-register/alumno.png') }}"
+                        alt="Registrar Alumno"
+                        class="w-10 h-10 mr-2 object-contain">
+                    Registrar Alumno
+                </button>
             @else
                 <button wire:click="cancel" class="text-sm font-semibold text-gray-500 hover:text-indigo-600 flex items-center group transition">
                     <svg class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -84,15 +85,6 @@
         <div class="p-6">
             @if($view == 'index')
                 <!-- LISTADO -->
-                <div class="mb-6 relative group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-indigo-500 transition-colors">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    <input wire:model.live.debounce.400ms="search" type="text" 
-                           placeholder="Buscar por nombre o DNI..." 
-                           class="block w-full pl-11 pr-4 py-3.5 border-2 border-gray-50 rounded-2xl bg-gray-50 focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all text-sm outline-none">
-                </div>
-
                 <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-inner">
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50/50">
@@ -281,13 +273,36 @@
 
                     <div class="mt-12 flex flex-col sm:flex-row justify-end gap-4 border-t pt-8 border-gray-100">
                         <button type="button" wire:click="cancel" class="px-8 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all">Descartar</button>
-                        <button type="submit" class="px-10 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 flex items-center justify-center transition-all active:scale-95">
-                            <span wire:loading.remove wire:target="store, update">{{ $view == 'create' ? 'Crear Ficha de Alumno' : 'Actualizar Información' }}</span>
-                            <span wire:loading wire:target="store, update" class="flex items-center">
-                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 
-                                Guardando...
-                            </span>
-                        </button>
+
+                        @if ($view == 'create')
+                            <button type="submit"
+                                class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">
+                                <span wire:loading.remove wire:target="store, update" class="flex items-center">
+                                    <img src="{{ asset('meta-register/alumno.png') }}"
+                                        alt="Crear Ficha de Alumno"
+                                        class="w-12 h-12 mr-2 object-contain">
+                                    Registrar Estudiante
+                                </span>
+                                <span wire:loading wire:target="store, update" class="flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    Registrando...
+                                </span>
+                            </button>
+                        @else
+                            <button type="submit"
+                                class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">
+                                <span wire:loading.remove wire:target="store, update" class="flex items-center">
+                                    <img src="{{ asset('meta-guardar/alumno.jpeg') }}"
+                                        alt="Actualizar Información"
+                                        class="w-12 h-12 mr-2 object-contain">
+                                    Guardar Estudiante
+                                </span>
+                                <span wire:loading wire:target="store, update" class="flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    Guardando...
+                                </span>
+                            </button>
+                        @endif
                     </div>
                 </form>
             @endif

@@ -1,9 +1,9 @@
-<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
+<div class=" bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
     
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="w-full px-4">
         
-        <!-- 1. BREADCRUMBS (Consistente) -->
-        <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl">
+        <!-- 1. BREADCRUMBS -->
+        <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium hover:text-indigo-600 transition-colors">
@@ -48,11 +48,11 @@
                 <div class="p-6">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <div class="relative w-full md:w-1/3 group">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition-colors">
+                                <img src="{{ asset('meta-buscar/docente.jpeg') }}" alt="Buscar" class="w-10 h-10 object-contain rounded">
                             </span>
                             <input wire:model.live.debounce.300ms="search" type="text" 
-                                   class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" 
+                                   class="w-full pl-16 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm shadow-md focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all outline-none" 
                                    placeholder="Buscar docente o DNI...">
                         </div>
                         
@@ -72,7 +72,6 @@
                             <thead class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/50 border-b border-gray-100">
                                 <tr>
                                     <th class="px-6 py-4">Docente</th>
-                                    <th class="px-6 py-4">Especialidad</th>
                                     <th class="px-6 py-4">DNI</th>
                                     <th class="px-6 py-4 text-center">Acciones</th>
                                 </tr>
@@ -89,11 +88,6 @@
                                                     <div class="text-sm font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">{{ $docente->user->name }}</div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="px-3 py-1 bg-white text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-tight border border-gray-100">
-                                                {{ $docente->especialidad }}
-                                            </span>
                                         </td>
                                         <td class="px-6 py-4 font-mono text-xs text-gray-500">{{ $docente->dni }}</td>
                                         <td class="px-6 py-4 text-center">
@@ -125,7 +119,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400 italic text-sm">No hay resultados.</td></tr>
+                                    <tr><td colspan="3" class="px-6 py-12 text-center text-gray-400 italic text-sm">No hay resultados.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -176,11 +170,6 @@
                                 <div class="space-y-6">
                                     <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest border-b pb-2">Información Profesional</h4>
                                     <div class="space-y-4">
-                                        <div class="space-y-1">
-                                            <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Especialidad</label>
-                                            <input wire:model="especialidad" type="text" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
-                                            @error('especialidad') <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ $message }}</p> @enderror
-                                        </div>
                                         <div class="space-y-1">
                                             <label class="text-[10px] font-black text-gray-500 uppercase ml-1">Fecha Contratación</label>
                                             <input wire:model="fecha_contratacion" type="date" class="w-full p-3 bg-gray-50 border-2 border-gray-50 rounded-xl focus:border-indigo-500 transition-all outline-none text-sm">
@@ -241,10 +230,28 @@
                                 <button type="button" wire:click="setTab(1)" class="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">&larr; Volver al perfil</button>
                                 <div class="flex gap-4">
                                     <button type="button" wire:click="cancel" class="px-8 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descartar</button>
-                                    <button type="submit" class="px-12 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 flex items-center active:scale-95 transition-all">
-                                        <span wire:loading class="mr-3 animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                                        {{ $user_id ? 'Actualizar Docente' : 'Finalizar Registro' }}
-                                    </button>
+
+                                    @if ($user_id)
+                                        <button type="submit"
+                                            class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">
+                                            <span wire:loading class="mr-2 animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full"></span>
+                                            <img src="{{ asset('meta-guardar/docente.jpeg') }}"
+                                                alt="Actualizar Docente"
+                                                class="w-12 h-12 mr-2 object-contain"
+                                                wire:loading.remove>
+                                            Guardar Docente
+                                        </button>
+                                    @else
+                                        <button type="submit"
+                                            class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">
+                                            <span wire:loading class="mr-2 animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full"></span>
+                                            <img src="{{ asset('meta-register/docente.png') }}"
+                                                alt="Finalizar Registro"
+                                                class="w-12 h-12 mr-2 object-contain"
+                                                wire:loading.remove>
+                                            Registrar Docente
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -275,8 +282,8 @@
                             <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-b border-gray-200 pb-2 text-center">Detalles Personales</h4>
                             <div class="space-y-4">
                                 <div><p class="text-[9px] font-black text-indigo-400 uppercase">DNI</p><p class="text-sm font-bold text-gray-800">{{ $selectedDocente->dni }}</p></div>
-                                <div><p class="text-[9px] font-black text-indigo-400 uppercase">Especialidad</p><p class="text-sm font-bold text-gray-800">{{ $selectedDocente->especialidad }}</p></div>
                                 <div><p class="text-[9px] font-black text-indigo-400 uppercase">Teléfono</p><p class="text-sm font-bold text-gray-800">{{ $selectedDocente->telefono }}</p></div>
+                                <div><p class="text-[9px] font-black text-indigo-400 uppercase">Fecha Contratación</p><p class="text-sm font-bold text-gray-800">{{ $selectedDocente->fecha_contratacion->format('d/m/Y') }}</p></div>
                             </div>
                         </div>
                         <div class="lg:col-span-2">

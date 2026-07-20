@@ -191,7 +191,7 @@
         <!-- CONTENIDO PRINCIPAL -->
         <flux:main class="flex flex-col min-h-screen">
             <!-- CUERPO DE LA PÁGINA (Body) -->
-            <div class="flex-grow py-6 px-4">
+            <div class="flex-grow ">
                 {{ $slot }}
             </div>
 

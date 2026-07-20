@@ -17,11 +17,12 @@ class Horarios extends Component
 
     // Propiedades de datos
     public $nombre, $area_id, $ciclo_id, $imagen, $horario_id;
-    public $filtro_area, $filtro_ciclo;
+    
+    // Propiedad de búsqueda (Reemplaza a los filtros anteriores)
+    public $search = '';
     
     public $areas = [];
     public $ciclos = []; 
-    public $ciclos_filtro = [];
 
     // Propiedades para Modal de Eliminación
     public $confirmandoEliminacion = false;
@@ -37,31 +38,18 @@ class Horarios extends Component
     public function mount()
     {
         $this->areas = Area::all();
-        $user = Auth::user();
+    }
 
-        if (!$user->hasRole('admin')) {
-            $matricula = \App\Models\Matricula::where('alumno_id', $user->id)
-                            ->where('estado', 'Activa')
-                            ->latest()
-                            ->first();
-
-            if ($matricula) {
-                $this->filtro_area = $matricula->ciclo->area_id; 
-                $this->filtro_ciclo = $matricula->ciclo_id;
-            }
-        }
+    // Resetear página cuando se busca (si usaras paginación)
+    public function updatedSearch()
+    {
+        // Si añades pagination en el futuro: $this->resetPage();
     }
 
     public function updatedAreaId($value)
     {
         $this->ciclos = Ciclo::where('area_id', $value)->get();
         $this->ciclo_id = null;
-    }
-
-    public function updatedFiltroArea($value)
-    {
-        $this->ciclos_filtro = Ciclo::where('area_id', $value)->get();
-        $this->filtro_ciclo = null;
     }
 
     // --- Métodos de Imagen (Pantalla Completa) ---
@@ -156,7 +144,6 @@ class Horarios extends Component
     {
         if (!Auth::user()->hasRole('admin')) abort(403);
 
-        // Validación corregida: solo acepta png, jpg, jpeg
         $this->validate([
             'nombre' => 'required|string|max:255',
             'area_id' => 'required|exists:areas,id',
@@ -205,10 +192,21 @@ class Horarios extends Component
         $user = Auth::user();
         $query = Horario::query()->with(['area', 'ciclo']);
 
-        if ($user->hasRole('admin')) {
-            if ($this->filtro_area) $query->where('area_id', $this->filtro_area);
-            if ($this->filtro_ciclo) $query->where('ciclo_id', $this->filtro_ciclo);
-        } else {
+        // Aplicar búsqueda unificada si hay texto
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('nombre', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('area', function($q2) {
+                      $q2->where('nombre', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('ciclo', function($q3) {
+                      $q3->where('nombre', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        if (!$user->hasRole('admin')) {
+            // Lógica restrictiva para Alumnos
             $matricula = \App\Models\Matricula::where('alumno_id', $user->id)
                             ->where('estado', 'Activa')
                             ->latest()

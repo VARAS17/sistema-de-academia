@@ -23,7 +23,7 @@ class Docente extends Component
     public $user_id;    
     
     // Propiedades de Formulario
-    public $name, $dni, $telefono, $especialidad, $fecha_contratacion;
+    public $name, $dni, $telefono, $fecha_contratacion; // Se eliminó $especialidad
     public $selectedCursos = []; 
     public $search = '';
 
@@ -39,9 +39,9 @@ class Docente extends Component
         return [
             'name' => 'required|string|min:3',
             'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->user_id ?? 'NULL') . ',user_id',
-            'telefono' => 'required|regex:/^9[0-9]{8}$/', // Empieza con 9 y tiene 9 dígitos
-            'especialidad' => 'required|string',
-            'fecha_contratacion' => 'required|date',
+            'telefono' => 'required|regex:/^9[0-9]{8}$/',
+            // Se quitó especialidad. La fecha ahora es más estricta con date_format
+            'fecha_contratacion' => 'required|date|date_format:Y-m-d', 
             'selectedCursos' => 'required|array|min:1',
         ];
     }
@@ -57,8 +57,9 @@ class Docente extends Component
         'dni.unique' => 'Este número de DNI ya está registrado.',
         'telefono.required' => 'El número de teléfono es obligatorio.',
         'telefono.regex' => 'El teléfono debe tener 9 dígitos y empezar con el número 9.',
-        'especialidad.required' => 'La especialidad es obligatoria.',
         'fecha_contratacion.required' => 'La fecha de contratación es obligatoria.',
+        'fecha_contratacion.date' => 'La fecha ingresada no es válida.',
+        'fecha_contratacion.date_format' => 'El formato de fecha debe ser Año-Mes-Día.',
         'selectedCursos.required' => 'Debe seleccionar al menos un curso.',
         'selectedCursos.min' => 'Debe asignar al menos un curso al docente.',
     ];
@@ -72,16 +73,12 @@ class Docente extends Component
             'name' => 'required|string|min:3',
             'dni' => 'required|digits:8|unique:docentes,dni,' . ($this->user_id ?? 'NULL') . ',user_id',
             'telefono' => 'required|regex:/^9[0-9]{8}$/',
-            'especialidad' => 'required|string',
-            'fecha_contratacion' => 'required|date',
+            'fecha_contratacion' => 'required|date|date_format:Y-m-d',
         ]);
 
         $this->tab = 2;
     }
 
-    /**
-     * Cambiar de pestaña manualmente (con validación si se va a la 2)
-     */
     public function setTab($tabNumber = 1)
     {
         if ($tabNumber == 2) {
@@ -119,21 +116,18 @@ class Docente extends Component
         $this->view = 'create';
     }
 
-    /**
-     * EDIT: Corregido con $id = null para PHP 8.4
-     */
     public function edit($id = null)
     {
         if (!$id) return;
 
         $this->resetValidation();
-        $docente = DocenteModel::with('user', 'cursos')->findOrFail($id); // $id aquí ya es el user_id, y es la PK de docentes, así que esto funciona bien
+        $docente = DocenteModel::with('user', 'cursos')->findOrFail($id);
 
         $this->user_id = $docente->user_id;
         $this->name = $docente->user->name;
         $this->dni = $docente->dni;
         $this->telefono = $docente->telefono;
-        $this->especialidad = $docente->especialidad;
+        // especialidad eliminada aquí
         $this->fecha_contratacion = $docente->fecha_contratacion ? $docente->fecha_contratacion->format('Y-m-d') : null;
         $this->selectedCursos = $docente->cursos->pluck('id')->toArray();
 
@@ -141,25 +135,19 @@ class Docente extends Component
         $this->tab = 1;
     }
 
-    /**
-     * GUARDAR / ACTUALIZAR
-     */
     public function store()
     {
         $this->validate();
 
         try {
             DB::transaction(function () {
-                // El email se genera con el DNI
                 $generatedEmail = $this->dni . '@sistema.com';
 
-                // 1. Usuario
                 $userData = [
                     'name' => $this->name,
                     'email' => $generatedEmail,
                 ];
 
-                // Contraseña inicial es el DNI
                 if (!$this->user_id) {
                     $userData['password'] = Hash::make($this->dni);
                 }
@@ -170,18 +158,16 @@ class Docente extends Component
                     $user->assignRole('docente');
                 }
 
-                // 2. Perfil Docente
+                // Perfil Docente (especialidad eliminada de la carga)
                 $docente = DocenteModel::updateOrCreate(
                     ['user_id' => $user->id], 
                     [
                         'dni' => $this->dni,
                         'telefono' => $this->telefono,
-                        'especialidad' => $this->especialidad,
                         'fecha_contratacion' => $this->fecha_contratacion,
                     ]
                 );
 
-                // 3. Cursos
                 $docente->cursos()->sync($this->selectedCursos);
             });
 
@@ -193,9 +179,6 @@ class Docente extends Component
         }
     }
 
-    /**
-     * SHOW: Corregido con $id = null
-     */
     public function show($id = null)
     {
         if (!$id) return;
@@ -203,9 +186,6 @@ class Docente extends Component
         $this->view = 'show';
     }
 
-    /**
-     * CONFIRM DELETE: Corregido con $id = null
-     */
     public function confirmDelete($id = null)
     {
         if (!$id) return;
@@ -250,7 +230,7 @@ class Docente extends Component
     private function resetInputFields()
     {
         $this->reset([
-            'name', 'dni', 'telefono', 'especialidad', 'fecha_contratacion', 
+            'name', 'dni', 'telefono', 'fecha_contratacion', 
             'selectedCursos', 'user_id',  'selectedDocente', 
             'docenteIdBeingDeleted', 'tab'
         ]);

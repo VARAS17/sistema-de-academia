@@ -1,5 +1,5 @@
-<div class="py-8 bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class=" bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
+        <div class="w-full px-4">
         
         <!-- 1. BREADCRUMBS -->
         <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">

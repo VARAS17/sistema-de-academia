@@ -18,7 +18,7 @@ return new class extends Migration
             // Datos específicos del docente
             $table->string('dni', 20)->unique();
             $table->string('telefono', 20)->nullable();
-            $table->string('especialidad'); // Ej: Matemáticas, Historia
+            $table->string('especialidad', 100)->nullable(); // Ej: Matemáticas, Historia
             $table->date('fecha_contratacion');
             
             $table->timestamps();
