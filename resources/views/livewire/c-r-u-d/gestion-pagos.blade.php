@@ -108,8 +108,9 @@
                                         </td>
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex justify-end space-x-2">
-                                                <button wire:click="verDetalle({{ $pago->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors" title="Ver Detalle">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                <button wire:click="verDetalle({{ $pago->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors relative inline-flex items-center justify-center flex-shrink-0" title="Ver Detalle">
+                                                    <img src="{{ asset('metaforas/PAGOS.svg') }}?v={{ time() }}" class="w-10 h-10 object-contain flex-shrink-0">
+                                                    <svg class="w-4 h-4 absolute bottom-1.5 right-1.5 bg-white text-black rounded-full shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                 </button>
                                                 
                                                 @hasanyrole('admin|docente')

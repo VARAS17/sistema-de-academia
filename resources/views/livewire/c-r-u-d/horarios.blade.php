@@ -30,7 +30,10 @@
 
             @role('admin')
             <button wire:click="create" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-100 active:scale-95">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <div class="relative inline-flex items-center justify-center w-6 h-6 mr-2 flex-shrink-0">
+                    <img src="{{ asset('metaforas/HORARIO.svg') }}?v={{ time() }}" class="w-full h-full object-contain">
+                    <svg class="w-3.5 h-3.5 absolute -bottom-1 -right-1 bg-white rounded-full p-[1px] shadow-sm border border-gray-100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#3B82F6" stroke="#0F172A" stroke-width="2.5" /><path d="M12 6v12M6 12h12" stroke="#0F172A" stroke-width="3" stroke-linecap="round" /></svg>
+                </div>
                 Nuevo Horario
             </button>
             @endrole

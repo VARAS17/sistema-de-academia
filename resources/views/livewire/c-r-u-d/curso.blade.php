@@ -58,7 +58,10 @@
                         
                         <button wire:click="create" 
                                 class="w-full md:w-auto px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center justify-center active:scale-95">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            <div class="relative inline-flex items-center justify-center w-6 h-6 mr-2 flex-shrink-0">
+                                <img src="{{ asset('metaforas/CURSO.svg') }}?v={{ time() }}" class="w-full h-full object-contain">
+                                <svg class="w-3.5 h-3.5 absolute -bottom-1 -right-1 bg-white rounded-full p-[1px] shadow-sm border border-gray-100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#3B82F6" stroke="#0F172A" stroke-width="2.5" /><path d="M12 6v12M6 12h12" stroke="#0F172A" stroke-width="3" stroke-linecap="round" /></svg>
+                            </div>
                             Registrar Curso
                         </button>
                     </div>
@@ -91,15 +94,18 @@
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex justify-center space-x-1">
-                                                <button wire:click="show({{ $curso->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors" title="Ver Detalles">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                                <button wire:click="show({{ $curso->id }})" class="p-2 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors relative inline-flex items-center justify-center" title="Ver Detalles">
+                                                    <img src="{{ asset('metaforas/CURSO.svg') }}" class="w-10 h-10 object-contain">
+                                                    <svg class="w-4 h-4 absolute bottom-1.5 right-1.5 bg-white text-black rounded-full shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                 </button>
-                                                <button wire:click="edit({{ $curso->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Editar">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                                <button wire:click="edit({{ $curso->id }})" class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors relative inline-flex items-center justify-center flex-shrink-0" title="Editar">
+                                                    <img src="{{ asset('metaforas/CURSO.svg') }}?v={{ time() }}" class="w-10 h-10 object-contain flex-shrink-0">
+                                                    <svg class="w-[22px] h-[22px] absolute bottom-1 right-1 bg-white rounded-full p-[3px] shadow-sm border border-gray-100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(45 12 12)" stroke="#1F2937" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path fill="#F87171" d="M9 5 C9 2, 15 2, 15 5 L15 7 L9 7 Z" /><rect fill="#E5E7EB" x="9" y="7" width="6" height="3" /><rect fill="#FACC15" x="9" y="10" width="6" height="7" /><line x1="12" y1="10" x2="12" y2="17" stroke="#EAB308" stroke-width="1.5" /><polygon fill="#FEF08A" points="9,17 15,17 12,21" /><polygon fill="#1F2937" points="11.25,20 12.75,20 12,21" /></g></svg>
                                                 </button>
                                                 <!-- ACTUALIZADO: Sin mensaje de consola -->
-                                                <button wire:click="confirmDelete({{ $curso->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                <button wire:click="confirmDelete({{ $curso->id }})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors relative inline-flex items-center justify-center flex-shrink-0" title="Eliminar">
+                                                    <img src="{{ asset('metaforas/CURSO.svg') }}?v={{ time() }}" class="w-10 h-10 object-contain flex-shrink-0">
+                                                    <svg class="w-[22px] h-[22px] absolute bottom-1 right-1 bg-white rounded-full p-[2px] shadow-sm border border-gray-100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g stroke="#991B1B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5V3.5C9 3 9.5 2.5 10 2.5h4c.5 0 1 .5 1 1.5V5" fill="none" /><rect x="4" y="5" width="16" height="3" rx="1" fill="#FCA5A5" /><path d="M5.5 8l1.5 13.5c.1.8.8 1.5 1.5 1.5h7c.8 0 1.4-.7 1.5-1.5L18.5 8" fill="#FEE2E2" /><line x1="8.5" y1="11" x2="9.5" y2="18" /><line x1="12" y1="11" x2="12" y2="18" /><line x1="15.5" y1="11" x2="14.5" y2="18" /><circle cx="17" cy="17" r="6" fill="#FCA5A5" /><path d="M14.5 14.5l5 5m0-5l-5 5" /></g></svg>
                                                 </button>
                                             </div>
                                         </td>

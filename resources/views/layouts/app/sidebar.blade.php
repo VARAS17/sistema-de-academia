@@ -59,6 +59,11 @@
                 min-width: 44px;
                 min-height: 44px;
             }
+
+            /* Forzar texto oscuro en formularios para evitar que se vea blanco */
+            input, select, textarea {
+                color: #111827 !important;
+            }
         </style>
     </head>
     <body class="min-h-screen bg-zinc-50 dark:bg-zinc-900">
@@ -88,19 +93,19 @@
                 @role('admin')
                     <flux:sidebar.group :heading="__('Gestión')">
                         <flux:sidebar.item :href="route('CRUD.cursos')" :current="request()->routeIs('CRUD.cursos')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/curso.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                            <x-slot:icon><img src="{{ asset('metaforas/CURSO.svg') }}" class="w-8 h-8 mx-1 rounded object-cover"></x-slot:icon>
                             {{ __('Cursos') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item :href="route('CRUD.docentes')" :current="request()->routeIs('CRUD.docentes')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/docente.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                            <x-slot:icon><img src="{{ asset('metaforas/DOCENTE.svg') }}" class="w-10 h-10 rounded object-cover"></x-slot:icon>
                             {{ __('Docentes') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item :href="route('CRUD.alumnos')" :current="request()->routeIs('CRUD.alumnos')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/estudiante.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                            <x-slot:icon><img src="{{ asset('metaforas/ESTUDIANTE.svg') }}" class="w-10 h-10 rounded object-cover"></x-slot:icon>
                             {{ __('Alumnos') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item :href="route('CRUD.matriculas')" :current="request()->routeIs('CRUD.matriculas')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/matricula.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                            <x-slot:icon><img src="{{ asset('metaforas/MATRICULA.svg') }}" class="w-8 h-8 mx-1 rounded object-cover"></x-slot:icon>
                             {{ __('Matrículas') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
@@ -108,15 +113,15 @@
 
                 <flux:sidebar.group :heading="__('Registro')">
                     <flux:sidebar.item :href="route('CRUD.gestion-pagos')" :current="request()->routeIs('CRUD.gestion-pagos')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/pagos.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>                        
+                            <x-slot:icon><img src="{{ asset('metaforas/PAGOS.svg') }}" class="w-10 h-10 rounded object-cover"></x-slot:icon>                        
                         {{ __('Registro Pagos') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item :href="route('CRUD.asistencias')" :current="request()->routeIs('CRUD.asistencias')" wire:navigate>
-                        <x-slot:icon><img src="{{ asset('metaforas/asistencia.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                        <x-slot:icon><img src="{{ asset('metaforas/ASISTENCIA.svg') }}" class="w-8 h-8 mx-1 rounded object-cover"></x-slot:icon>
                         {{ __('Asistencias') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item :href="route('CRUD.horarios')" :current="request()->routeIs('CRUD.horarios')" wire:navigate>
-                        <x-slot:icon><img src="{{ asset('metaforas/horario.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                        <x-slot:icon><img src="{{ asset('metaforas/HORARIO.svg') }}" class="w-8 h-8 mx-1 rounded object-cover"></x-slot:icon>
                         {{ __('Horarios') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
@@ -124,12 +129,12 @@
                 <flux:sidebar.group :heading="__('Evaluación')">
                     @role('admin')
                         <flux:sidebar.item :href="route('CRUD.simulacros')" :current="request()->routeIs('CRUD.simulacros')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/simulacros.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
+                            <x-slot:icon><img src="{{ asset('metaforas/SIMULACROS.svg') }}" class="w-8 h-8 mx-1 rounded object-cover"></x-slot:icon>
                             {{ __('Simulacros') }}
                         </flux:sidebar.item>
                     @endrole
                     <flux:sidebar.item :href="route('CRUD.puntajes-simulacro')" :current="request()->routeIs('CRUD.puntajes-simulacro')" wire:navigate>
-                        <x-slot:icon><img src="{{ asset('metaforas/nota.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>    
+                        <x-slot:icon><img src="{{ asset('metaforas/NOTAS.svg') }}" class="w-8 h-8 mx-1 rounded object-cover"></x-slot:icon>    
                     {{ __('Puntajes Simulacro') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
