@@ -229,8 +229,9 @@
                             <div class="flex justify-between pt-6 border-t">
                                 <button type="button" wire:click="setTab(1)" class="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">&larr; Volver al perfil</button>
                                 <div class="flex gap-4">
-                                    <button type="button" wire:click="cancel" class="px-8 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descartar</button>
-
+                                    <button type="button" wire:click="cancel" class="px-8 py-3 text-sm font-bold text-red-600 bg-red-50 border-2 border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 hover:text-red-700 active:scale-95 transition-all duration-150 uppercase tracking-widest shadow-sm">
+                                        Cancelar
+                                    </button>
                                     @if ($user_id)
                                         <button type="submit"
                                             class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">

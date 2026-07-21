@@ -297,8 +297,9 @@
 
                         <!-- 4. BOTONES -->
                         <div class="flex flex-col sm:flex-row justify-end gap-4 mt-12 pt-10 border-t border-gray-100">
-                            <button type="button" wire:click="closeModal" class="px-8 py-3.5 text-xs font-black text-gray-400 hover:text-gray-600 uppercase tracking-widest transition-colors">Cancelar</button>
-
+                            <button type="button" wire:click="closeModal" class="px-8 py-3 text-sm font-bold text-red-600 bg-red-50 border-2 border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 hover:text-red-700 active:scale-95 transition-all duration-150 uppercase tracking-widest shadow-sm">
+                                Cancelar
+                            </button>
                             @if ($view == 'create')
                                 <button type="submit"
                                     class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-2xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">

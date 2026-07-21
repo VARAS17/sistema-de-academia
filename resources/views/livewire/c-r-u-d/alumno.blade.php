@@ -1,6 +1,6 @@
 <div class=" bg-amber-50/40 dark:bg-amber-950/20 min-h-screen font-sans antialiased relative" x-data="{ tab: @entangle('tab') }">
-    
-    <!-- 1. SISTEMA DE BREADCRUMBS -->
+    <div class="w-full px-4">
+            <!-- 1. SISTEMA DE BREADCRUMBS -->
     <nav class="flex mb-6 px-4 py-3 text-gray-500 bg-white shadow-sm border border-gray-100 rounded-xl" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-2 md:space-x-4">
             <li class="inline-flex items-center">
@@ -272,8 +272,9 @@
                     </div>
 
                     <div class="mt-12 flex flex-col sm:flex-row justify-end gap-4 border-t pt-8 border-gray-100">
-                        <button type="button" wire:click="cancel" class="px-8 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all">Descartar</button>
-
+                        <button type="button" wire:click="cancel" class="px-8 py-3 text-sm font-bold text-red-600 bg-red-50 border-2 border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 hover:text-red-700 active:scale-95 transition-all duration-150 uppercase tracking-widest shadow-sm">
+                            Cancelar
+                        </button>
                         @if ($view == 'create')
                             <button type="submit"
                                 class="h-14 px-6 flex items-center justify-center bg-[#98FB98] text-black font-bold rounded-xl hover:bg-[#7FE67F] transition shadow-lg active:scale-95">
@@ -339,5 +340,5 @@
         </div>
     </div>
     @endif
-
+    </div>
 </div>

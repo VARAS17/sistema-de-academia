@@ -210,7 +210,16 @@
                     </div>
                     
                     <div class="mt-10 flex justify-end">
-                        <button wire:click="showIndex" class="px-10 py-3 bg-white border-2 border-gray-100 text-gray-400 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all">Regresar</button>
+                        <button wire:click="showIndex" 
+                            class="inline-flex items-center gap-2 px-8 py-3 bg-white border-2 border-gray-200 text-gray-700 font-black text-xs uppercase tracking-widest rounded-xl shadow-sm hover:bg-gray-50 hover:border-gray-300 hover:shadow-md active:scale-95 transition-all">
+                            
+                            <!-- Icono de flecha izquierda -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                            </svg>
+
+                            <span>Regresar</span>
+                        </button>
                     </div>
                 </div>
 

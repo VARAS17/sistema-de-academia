@@ -97,15 +97,7 @@
             <div class="relative flex-1 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-6 shadow-sm overflow-y-auto">
                 
                 @if($data['role'] === 'admin')
-                    {{-- TABLA ADMIN: RENDIMIENTO POR ÁREA --}}
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h3 class="text-lg font-black text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">Rendimiento por Área Académica</h3>
-                            <p class="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">Promedios generales basados en simulacros</p>
-                        </div>
-                    </div>
                     
-
                     {{-- TABLA ADMIN: ALUMNOS POR CICLO --}}
                     <div class="flex justify-between items-center mb-6 pt-6 border-t border-neutral-100 dark:border-neutral-700">
                         <h3 class="text-lg font-black text-neutral-800 dark:text-neutral-200 uppercase tracking-tighter">Distribución de Estudiantes por Ciclo</h3>

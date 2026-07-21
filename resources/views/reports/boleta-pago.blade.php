@@ -17,7 +17,7 @@
 <body>
     <div class="header">
         <h1>BOLETA DE PAGO</h1>
-        <p>Institución Educativa - Sistema de Matrícula</p>
+        <p>ACADEMIA PACIFICO - Sistema de Matrícula</p>
     </div>
 
     <div class="info-section">
@@ -50,7 +50,8 @@
             <th>MONTO</th>
         </tr>
         <tr>
-            <td>{{ $pago->concepto }}</td>
+            <!-- Cambiamos $pago->concepto por la variable calculada -->
+            <td>{{ $concepto_texto }}</td> 
             <td>{{ $pago->matricula->ciclo->nombre }}</td>
             <td>S/ {{ number_format($pago->monto, 2) }}</td>
         </tr>

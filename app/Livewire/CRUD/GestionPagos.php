@@ -125,13 +125,33 @@ class GestionPagos extends Component
             'matricula.alumno.carrera'
         ])->findOrFail($id);
 
-        // Validación de seguridad para Alumnos
+        // Validación de seguridad
         if (auth()->user()->hasRole('alumno') && $pago->matricula->alumno->user_id !== auth()->id()) {
             abort(403, 'No tienes permiso para ver este documento.');
         }
 
+        // --- LÓGICA PARA DETERMINAR EL NÚMERO DE CUOTA ---
+        // Contamos cuántos registros de pago existen para esta matrícula 
+        // cuyo ID sea menor o igual al actual (orden cronológico)
+        $numeroCuota = PagoMatricula::where('matricula_id', $pago->matricula_id)
+            ->where('id', '<=', $pago->id)
+            ->count();
+
+        $nombresCuotas = [
+            1 => 'Primera Cuota',
+            2 => 'Segunda Cuota',
+            3 => 'Tercera Cuota',
+            4 => 'Cuarta Cuota',
+            5 => 'Quinta Cuota',
+            6 => 'Sexta Cuota',
+        ];
+
+        $concepto_dinamico = $nombresCuotas[$numeroCuota] ?? "Cuota N° {$numeroCuota}";
+        // ------------------------------------------------
+
         $data = [
             'pago' => $pago,
+            'concepto_texto' => $concepto_dinamico, // Pasamos la variable a la vista
             'fecha_emision' => now()->format('d/m/Y H:i A')
         ];
 

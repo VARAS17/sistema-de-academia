@@ -15,7 +15,7 @@
 
         <!-- SECCIÓN DERECHA: FORMULARIO -->
         <div class="flex items-center justify-center w-full bg-white lg:w-1/2 dark:bg-zinc-900">
-            <div class="w-full max-w-sm px-8" 
+            <div class="w-full max-w-sm px-1" 
                  x-data="{ 
                     loading: false, 
                     timeout: false,
@@ -26,7 +26,7 @@
                     }
                  }">
                 
-                <div class="mb-8 text-center lg:text-left">
+                <div class="mb-15 text-center lg:text-left">
                     <flux:heading size="xl" level="1" class="font-bold tracking-tight">{{ __('¡Bienvenido!') }}</flux:heading>
                     <flux:subheading>{{ __('Ingresa tus credenciales para acceder al sistema') }}</flux:subheading>
                 </div>

@@ -108,56 +108,86 @@
 
             <!-- CUERPO DEL SIDEBAR (Navegación) -->
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
+                <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    <span class="flex items-center gap-2">
+                        {{ __('Dashboard') }}
+                        <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </span>
                 </flux:sidebar.item>
 
                 @role('admin')
                     <flux:sidebar.group :heading="__('Gestión')">
-                        <flux:sidebar.item :href="route('CRUD.cursos')" :current="request()->routeIs('CRUD.cursos')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/curso.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                            {{ __('Cursos') }}
+                        <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.cursos')" :current="request()->routeIs('CRUD.cursos')" wire:navigate>
+                            <x-slot:icon><img src="{{ asset('metaforas/CURSO.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                            <span class="flex items-center justify-between w-full">
+                                {{ __('Cursos') }}
+                                <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </span>
                         </flux:sidebar.item>
-                        <flux:sidebar.item :href="route('CRUD.docentes')" :current="request()->routeIs('CRUD.docentes')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/docente.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                            {{ __('Docentes') }}
+                        <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.docentes')" :current="request()->routeIs('CRUD.docentes')" wire:navigate>
+                            <x-slot:icon><img src="{{ asset('metaforas/DOCENTE.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                            <span class="flex items-center justify-between w-full">
+                                {{ __('Docentes') }}
+                                <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </span>
                         </flux:sidebar.item>
-                        <flux:sidebar.item :href="route('CRUD.alumnos')" :current="request()->routeIs('CRUD.alumnos')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/estudiante.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                            {{ __('Alumnos') }}
+                        <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.alumnos')" :current="request()->routeIs('CRUD.alumnos')" wire:navigate>
+                            <x-slot:icon><img src="{{ asset('metaforas/ESTUDIANTE.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                            <span class="flex items-center justify-between w-full">
+                                {{ __('Alumnos') }}
+                                <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </span>
                         </flux:sidebar.item>
-                        <flux:sidebar.item :href="route('CRUD.matriculas')" :current="request()->routeIs('CRUD.matriculas')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/matricula.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                            {{ __('Matrículas') }}
+                        <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.matriculas')" :current="request()->routeIs('CRUD.matriculas')" wire:navigate>
+                            <x-slot:icon><img src="{{ asset('metaforas/MATRICULA.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                            <span class="flex items-center justify-between w-full">
+                                {{ __('Matrículas') }}
+                                <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </span>
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endrole
 
                 <flux:sidebar.group :heading="__('Registro')">
-                    <flux:sidebar.item :href="route('CRUD.gestion-pagos')" :current="request()->routeIs('CRUD.gestion-pagos')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/pagos.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>                        
-                        {{ __('Registro Pagos') }}
+                    <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.gestion-pagos')" :current="request()->routeIs('CRUD.gestion-pagos')" wire:navigate>
+                        <x-slot:icon><img src="{{ asset('metaforas/PAGOS.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>                        
+                        <span class="flex items-center justify-between w-full">
+                            {{ __('Registro Pagos') }}
+                            <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </span>
                     </flux:sidebar.item>
-                    <flux:sidebar.item :href="route('CRUD.asistencias')" :current="request()->routeIs('CRUD.asistencias')" wire:navigate>
-                        <x-slot:icon><img src="{{ asset('metaforas/asistencia.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                        {{ __('Asistencias') }}
+                    <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.asistencias')" :current="request()->routeIs('CRUD.asistencias')" wire:navigate>
+                        <x-slot:icon><img src="{{ asset('metaforas/ASISTENCIA.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                        <span class="flex items-center justify-between w-full">
+                            {{ __('Asistencias') }}
+                            <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </span>
                     </flux:sidebar.item>
-                    <flux:sidebar.item :href="route('CRUD.horarios')" :current="request()->routeIs('CRUD.horarios')" wire:navigate>
-                        <x-slot:icon><img src="{{ asset('metaforas/horario.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                        {{ __('Horarios') }}
+                    <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.horarios')" :current="request()->routeIs('CRUD.horarios')" wire:navigate>
+                        <x-slot:icon><img src="{{ asset('metaforas/HORARIO.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                        <span class="flex items-center justify-between w-full">
+                            {{ __('Horarios') }}
+                            <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </span>
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
                 <flux:sidebar.group :heading="__('Evaluación')">
                     @role('admin')
-                        <flux:sidebar.item :href="route('CRUD.simulacros')" :current="request()->routeIs('CRUD.simulacros')" wire:navigate>
-                            <x-slot:icon><img src="{{ asset('metaforas/simulacros.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>
-                            {{ __('Simulacros') }}
+                        <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.simulacros')" :current="request()->routeIs('CRUD.simulacros')" wire:navigate>
+                            <x-slot:icon><img src="{{ asset('metaforas/SIMULACROS.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>
+                            <span class="flex items-center justify-between w-full">
+                                {{ __('Simulacros') }}
+                                <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </span>
                         </flux:sidebar.item>
                     @endrole
-                    <flux:sidebar.item :href="route('CRUD.puntajes-simulacro')" :current="request()->routeIs('CRUD.puntajes-simulacro')" wire:navigate>
-                        <x-slot:icon><img src="{{ asset('metaforas/nota.jpeg') }}" class="w-8 h-8 rounded object-cover"></x-slot:icon>    
-                    {{ __('Puntajes Simulacro') }}
+                    <flux:sidebar.item x-data="{ loading: false }" @click="loading = true" :href="route('CRUD.puntajes-simulacro')" :current="request()->routeIs('CRUD.puntajes-simulacro')" wire:navigate>
+                        <x-slot:icon><img src="{{ asset('metaforas/NOTAS.svg') }}" class="w-12 h-12 rounded object-cover"></x-slot:icon>    
+                        <span class="flex items-center justify-between w-full">
+                            {{ __('Notas Simulacro') }}
+                            <svg x-show="loading" class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </span>
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
@@ -195,16 +225,6 @@
                 {{ $slot }}
             </div>
 
-            <!-- FOOTER DE LA PÁGINA (Delimitado con borde superior) -->
-            <footer class="mt-auto border-t border-zinc-200 dark:border-zinc-800 py-4 px-6 text-center text-xs text-zinc-500">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-2">
-                    <p>&copy; {{ date('Y') }} Academia Metáforas. Todos los derechos reservados.</p>
-                    <div class="flex gap-4">
-                        <a href="#" class="hover:text-indigo-600 transition">Soporte</a>
-                        <a href="#" class="hover:text-indigo-600 transition">Manual de Usuario</a>
-                    </div>
-                </div>
-            </footer>
         </flux:main>
 
         @persist('toast')
